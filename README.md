@@ -32,3 +32,16 @@ Application web moderne en PHP orienté objet sans framework complet, permettant
 4. Quelle différence existe entre ORM et SQL écrit à la main ?
    Le SQL manuel manipule directement des chaînes de requêtes brutes et des tableaux associatifs sans typage objet. L'ORM mappe les tables et relations sur des objets métier typés, protège automatiquement contre les injections SQL, et abstrait les dialectes spécifiques des différents moteurs de bases de données.
 
+### Étape 3 — Modèles
+
+1. Quel type de relation Eloquent avez-vous utilisé ?
+   Une relation `HasMany` (un-à-plusieurs) sur `Salle::reservations()` et son inverse `BelongsTo` (plusieurs-à-un) sur `Reservation::salle()`, liées par la clé étrangère `salle_id`.
+
+2. Pourquoi déclarer `$fillable` ou `$guarded` ?
+   Pour sécuriser l'assignation en masse. Cela empêche un utilisateur malveillant d'injecter des champs non sollicités (ex: falsifier l'identifiant `id` ou des colonnes d'administration) lors d'un `Model::create()` ou `$model->fill()`.
+
+3. Pourquoi convertir `active` en booléen ?
+   En base relationnelle (MySQL), les booléens sont stockés sous forme d'`INT`. Le cast `'active' => 'boolean'` assure que le modèle PHP manipule toujours un type primitif `bool` (`true`/`false`) strict.
+
+4. Pourquoi convertir les dates en objets ?
+   Le cast `'datetime'` convertit automatiquement les chaînes SQL (`2026-09-06 10:00:00`) en instances `Carbon` / `DateTimeInterface`. Cela permet d'effectuer des comparaisons fiables, des calculs d'intervalles et des formatages personnalisés (`$date->format('d/m/Y')`) sans ré-instanciation manuelle.
