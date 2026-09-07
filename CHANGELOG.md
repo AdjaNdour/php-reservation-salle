@@ -43,3 +43,10 @@ et ce projet adhère à [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ### Ajouté
 - Script de données initiales (`database/seed.php`)
 - Insertion de 5 salles (Amphithéâtre A, Salle B12, Laboratoire Chimie, Salle Informatique 1, Salle de réunion)
+
+## [0.5.0] - 2026-09-06
+### Ajouté
+- Contrat de validation `App\Validation\ValidatorInterface`
+- Classe de résultat de validation `App\Validation\ValidationResult`
+- Validateur de salle `App\Validation\SalleValidator` utilisant `Respect\Validation`
+- Validateur de réservation `App\Validation\ReservationValidator` utilisant `Respect\Validation`

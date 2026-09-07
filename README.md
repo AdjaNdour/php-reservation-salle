@@ -56,3 +56,20 @@ Application web moderne en PHP orienté objet sans framework complet, permettant
 
 3. Comment empêcher les doublons ?
    En utilisant une condition d'unicité basée sur un critère distinctif (ici `nom`), par exemple via `Salle::updateOrCreate(['nom' => $data['nom']], $data)` ou en vérifiant l'existence avant insertion.
+
+
+### Étape 5 — Validation
+
+1. Pourquoi séparer la validation syntaxique des règles métier ?
+   La validation syntaxique vérifie les données brutes isolées email chaines vides etc. 
+   Les règles métier vérifient la légalité de l'opération dans le domaine salle inactive, conflit de créneau horaire avec d'autres réservations. le melange des deux viole le principe de responsabilité unique (SRP).
+
+2. Pourquoi créer une interface de validation ?
+   Elle établit un contrat uniforme (`validate(array $data): ValidationResult`), et si jamais on change de dependances
+   , les besoins évoluent ou si l'on change de bibliothèque de validation, on peut remplacer l'implémentation sans modifier tout le reste de l'application.
+
+3. Pourquoi le validateur ne doit-il pas enregistrer les données ?
+   Un validateur n'a pour rôle que d'inspecter et d'émettre un diagnostic. S'il effectuait des écritures en base, il couplerait la validation à la persistance et empêcherait la pré-validation sans effet de bord.
+
+4. Comment retourner plusieurs erreurs en une seule fois ?
+   En accumulant toutes les erreurs détectées dans une collection clé-valeur (tableau associatif `champ => message`) encapsulée dans l'objet `ValidationResult`. L'utilisateur reçoit ainsi un retour complet pour tous les champs erronés dès la première soumission.
