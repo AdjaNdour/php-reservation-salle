@@ -73,3 +73,17 @@ Application web moderne en PHP orienté objet sans framework complet, permettant
 
 4. Comment retourner plusieurs erreurs en une seule fois ?
    En accumulant toutes les erreurs détectées dans une collection clé-valeur (tableau associatif `champ => message`) encapsulée dans l'objet `ValidationResult`. L'utilisateur reçoit ainsi un retour complet pour tous les champs erronés dès la première soumission.
+
+### Étape 6 — DTO
+
+1. Quelle différence existe entre DTO et modèle Eloquent ?
+   Un DTO est un simple conteneur de données en lecture seule (`readonly`), typé et sans comportement, conçu pour transiter entre les couches. Un modèle Eloquent est une entité Active , couplée à la base de données, gérant les relations, événements et états de persistance.
+
+2. Pourquoi le DTO ne doit-il pas appeler `save()` ?
+   Le DTO n'a aucune responsabilité de persistance ni d'accès aux données.
+
+3. À quel moment transforme-t-on les chaînes en dates ?
+   Lors de la fabrique du DTO (méthode `fromArray()`), juste après que la validation syntaxique a garanti que la chaîne représentait une date valide. Le service reçoit ainsi un objet `DateTimeImmutable`.
+
+4. Le DTO doit-il contenir la règle de chevauchement ?
+   Non. La règle de chevauchement exige de consulter les réservations existantes en base de données via un repository. Le DTO est passif et ne doit jamais dépendre de la base de données.

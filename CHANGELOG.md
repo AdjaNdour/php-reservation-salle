@@ -50,3 +50,8 @@ et ce projet adhère à [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - Classe de résultat de validation `App\Validation\ValidationResult`
 - Validateur de salle `App\Validation\SalleValidator` utilisant `Respect\Validation`
 - Validateur de réservation `App\Validation\ReservationValidator` utilisant `Respect\Validation`
+
+## [0.6.0] - 2026-09-06
+### Ajouté
+- Objet de transport typé et immuable `App\DTO\CreerSalleDTO`
+- Objet de transport typé et immuable `App\DTO\CreerReservationDTO` 
