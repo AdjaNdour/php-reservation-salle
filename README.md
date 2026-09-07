@@ -102,3 +102,17 @@ Application web moderne en PHP orienté objet sans framework complet, permettant
 
 4. Quel avantage apporte-t-elle ?
    le decouplage , si demain je dois utiliser pdo je suis abliger de modifier le services.
+
+### Étape 8 — Services Métier
+
+1. Pourquoi ces règles ne sont-elles pas dans le contrôleur ?
+   Le contrôleur a pour unique rôle la gestion du protocole HTTP (lire la requête, appeler les composants, retourner une réponse ou redirection). Y placer les règles métier provoquerait le syndrome du "Fat Controller" et interdirait la réutilisation de cette logique via un autre canal (CLI, API REST, tâches cron).
+
+2. Pourquoi le service dépend-il d’une interface de Repository ?
+   Pour respecter le principe d'injection des dépendances (DIP) : la logique métier ne doit pas dépendre des détails d'implémentation de la base SQL .
+
+3. Quelle exception doit être levée en cas de conflit ?
+   Une exception de domaine explicite : `SalleIndisponibleException`.
+
+4. Comment tester le service sans MySQL ?
+   En lui injectant une implémentation en mémoire de `ReservationRepositoryInterface` (`InMemoryReservationRepository`), simulant le stockage dans un simple tableau PHP.
