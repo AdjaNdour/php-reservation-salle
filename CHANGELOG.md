@@ -83,3 +83,9 @@ et ce projet adhère à [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - Contrôle des paramètres dynamiques entiers `{id:\d+}`
 - Intégration du routeur dans `App\Application` avec suppression de la query string
 - Gestion des statuts 404 (NOT_FOUND) et 405 (METHOD_NOT_ALLOWED avec en-tête Allow)
+
+## [0.11.0] - 2026-09-06
+### Ajouté
+- Configuration du conteneur d'injection de dépendances PHP-DI (`config/container.php`)
+- Utilisation de l'autowiring pour les classes concrètes et de factories pour les objets 
+- Point d'entrée unique et épuré `public/index.php`

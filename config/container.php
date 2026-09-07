@@ -21,6 +21,7 @@ use function DI\autowire;
 use function DI\factory;
 
 return [
+
     CapsuleManager::class => factory(static function (): CapsuleManager {
         $capsule = require __DIR__ . '/database.php';
         return $capsule;
@@ -29,6 +30,7 @@ return [
     SalleRepositoryInterface::class => autowire(EloquentSalleRepository::class),
     ReservationRepositoryInterface::class => autowire(EloquentReservationRepository::class),
 
+    
     SalleValidator::class => autowire(SalleValidator::class),
     ReservationValidator::class => autowire(ReservationValidator::class),
 
@@ -39,6 +41,7 @@ return [
 
     SalleController::class => autowire(SalleController::class),
     ReservationController::class => autowire(ReservationController::class),
+
 
     Dispatcher::class => factory(static function (): Dispatcher {
         $routesCallable = require dirname(__DIR__) . '/routes/web.php';

@@ -130,3 +130,21 @@ Application web moderne en PHP orienté objet sans framework complet, permettant
 
 4. Quel composant doit interpréter le handler retourné ?
    La classe principale `App\Application` (Front Controller), qui résout la classe contrôleur via le conteneur d'injection et invoque la méthode cible avec les paramètres d'URL.
+
+### Étape 11 — PHP-DI
+
+1. Quelle différence existe entre injection et conteneur ?
+   L'injection de dépendances est un patron de conception consistant à passer les collaborateurs à une classe (par constructeur). Le conteneur est l'outil logiciel qui automatise ce processus en instanciant et injectant les objets selon leur configuration.
+
+2. Qu’est-ce que l’autowiring ?
+   La capacité du conteneur à deviner et injecter automatiquement les dépendances requises en analysant les types déclarés dans les paramètres du constructeur grâce à la réflexion PHP.
+
+3. Pourquoi les interfaces nécessitent-elles une définition ?
+   Une interface ne pouvant pas être instanciée, le conteneur ne peut pas deviner seul quelle classe concrète adopter. Il est obligatoire de lui lier explicitement l'implémentation voulue (ex: `SalleRepositoryInterface` => `EloquentSalleRepository`).
+
+4. Pourquoi limiter `$container->get()` au point d’entrée ?
+   Pour préserver l'inversion de contrôle. Si des classes appellent `$container->get()` à l'intérieur de leurs propres méthodes, elles masquent leurs dépendances réelles et transforment le conteneur en anti-pattern Service Locator.
+
+5. Quel anti-pattern apparaît si toutes les classes interrogent le conteneur ?
+   L'anti-pattern Service Locator, qui induit un couplage fort avec le conteneur et rend les classes impossibles à tester unitairement de manière isolée.
+
