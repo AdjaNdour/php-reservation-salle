@@ -55,3 +55,9 @@ et ce projet adhère à [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ### Ajouté
 - Objet de transport typé et immuable `App\DTO\CreerSalleDTO`
 - Objet de transport typé et immuable `App\DTO\CreerReservationDTO` 
+
+## [0.7.0] - 2026-09-06
+### Ajouté
+- Contrats de persistance `App\Repository\SalleRepositoryInterface` et `App\Repository\ReservationRepositoryInterface`
+- Implémentation `App\Repository\EloquentSalleRepository`
+- Implémentation `App\Repository\EloquentReservationRepository`

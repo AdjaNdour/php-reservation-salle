@@ -87,3 +87,18 @@ Application web moderne en PHP orienté objet sans framework complet, permettant
 
 4. Le DTO doit-il contenir la règle de chevauchement ?
    Non. La règle de chevauchement exige de consulter les réservations existantes en base de données via un repository. Le DTO est passif et ne doit jamais dépendre de la base de données.
+
+### Étape 7 — Repositories
+
+1. Eloquent constitue-t-il déjà un accès aux données ?
+   Oui, Eloquent est un ORM Active Record et fournit déjà un Query Builder.
+
+2. Pourquoi ajouter un Repository au-dessus d’Eloquent ?
+   On ajoute un Repository au-dessus d’Eloquent pour créer une barrière d’abstraction entre le domaine métier et la technologie de persistance. Les Controllers et Services ne dépendent pas directement d’Eloquent. 
+   Ainsi, l’implémentation du Repository peut varier (Eloquent, PDO, API, etc.) sans modifier la logique métier.
+
+3. Cette abstraction est-elle toujours nécessaire ?
+   Dans un projet minimaliste sans logique complexe (CRUD basique), elle peut être superflue. Mais dès que des règles métier complexes existent et requièrent des tests unitaires rapides et isolés, elle devient indispensable.
+
+4. Quel avantage apporte-t-elle ?
+   le decouplage , si demain je dois utiliser pdo je suis abliger de modifier le services.
