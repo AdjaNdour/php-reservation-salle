@@ -116,3 +116,17 @@ Application web moderne en PHP orienté objet sans framework complet, permettant
 
 4. Comment tester le service sans MySQL ?
    En lui injectant une implémentation en mémoire de `ReservationRepositoryInterface` (`InMemoryReservationRepository`), simulant le stockage dans un simple tableau PHP.
+
+### Étape 10 — FastRoute
+
+1. Pourquoi FastRoute ne construit-il pas lui-même le contrôleur ?
+   FastRoute est un routeur pur : son périmètre est strictement délimité à l'analyse de l'URI et de la méthode HTTP. La construction des contrôleurs relève de la responsabilité du conteneur d'injection de dépendances.
+
+2. Quelle différence existe entre 404 et 405 ?
+   Une 404 (Not Found) signifie qu'aucun handler n'existe pour cette URL, quelle que soit la méthode. Une 405 (Method Not Allowed) signifie que l'URL existe mais ne prend pas en charge le verbe HTTP employé.
+
+3. Pourquoi contraindre `{id}` avec `\d+` ?
+   Pour rejeter immédiatement toute requête contenant un identifiant non numérique au niveau du routeur, avant même d'instancier un contrôleur ou d'exécuter une requête inutile.
+
+4. Quel composant doit interpréter le handler retourné ?
+   La classe principale `App\Application` (Front Controller), qui résout la classe contrôleur via le conteneur d'injection et invoque la méthode cible avec les paramètres d'URL.

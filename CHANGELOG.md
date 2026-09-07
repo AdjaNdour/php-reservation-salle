@@ -76,3 +76,10 @@ et ce projet adhère à [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - Templates pour les salles (`templates/salle/index.php`, `show.php`, `form.php`)
 - Templates pour les réservations (`templates/reservation/index.php`, `show.php`, `form.php`)
 - Templates d'erreur HTTP (`templates/error/404.php`, `templates/error/405.php`)
+
+## [0.10.0]
+### Ajouté
+- Déclaration de l'ensemble des routes dans `routes/web.php` avec FastRoute
+- Contrôle des paramètres dynamiques entiers `{id:\d+}`
+- Intégration du routeur dans `App\Application` avec suppression de la query string
+- Gestion des statuts 404 (NOT_FOUND) et 405 (METHOD_NOT_ALLOWED avec en-tête Allow)
