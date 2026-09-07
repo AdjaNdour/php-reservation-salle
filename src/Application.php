@@ -1,0 +1,17 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App;
+
+class Application
+{
+    public function __construct()
+    {
+    }
+
+    public function run(): void
+    {
+        // Point d'entrée de l'application
+    }
+}
