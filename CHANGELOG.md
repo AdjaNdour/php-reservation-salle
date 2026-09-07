@@ -84,8 +84,16 @@ et ce projet adhère à [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - Intégration du routeur dans `App\Application` avec suppression de la query string
 - Gestion des statuts 404 (NOT_FOUND) et 405 (METHOD_NOT_ALLOWED avec en-tête Allow)
 
-## [0.11.0] - 2026-09-06
+## [0.11.0]
 ### Ajouté
 - Configuration du conteneur d'injection de dépendances PHP-DI (`config/container.php`)
 - Utilisation de l'autowiring pour les classes concrètes et de factories pour les objets 
 - Point d'entrée unique et épuré `public/index.php`
+
+## [0.12.0]
+### Ajouté
+- Configuration de la suite de tests PHPUnit (`phpunit.xml` et `tests/bootstrap.php`)
+- Doublures de persistance en mémoire `InMemorySalleRepository` et `InMemoryReservationRepository`
+- Tests unitaires complets de `CreerReservationService` (8 scénarios obligatoires) sans dépendance MySQL
+- Tests unitaires de validation avec `Respect\Validation` (5 scénarios obligatoires)
+- Tests d'intégration Eloquent (création, relation HasMany/BelongsTo, recherche de conflit, annulation)

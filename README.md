@@ -147,4 +147,3 @@ Application web moderne en PHP orienté objet sans framework complet, permettant
 
 5. Quel anti-pattern apparaît si toutes les classes interrogent le conteneur ?
    L'anti-pattern Service Locator, qui induit un couplage fort avec le conteneur et rend les classes impossibles à tester unitairement de manière isolée.
-
