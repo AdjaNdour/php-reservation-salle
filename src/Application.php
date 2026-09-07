@@ -12,6 +12,5 @@ class Application
 
     public function run(): void
     {
-        // Point d'entrée de l'application
     }
 }
