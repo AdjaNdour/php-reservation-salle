@@ -67,3 +67,12 @@ et ce projet adhère à [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - Exceptions métier dédiées `SalleIndisponibleException`, `ReservationIntrouvableException` et `RegleMetierException`
 - Service métier `App\Service\CreerReservationService` implémentant les 9 règles d'acceptation et de non-chevauchement
 - Service métier `App\Service\AnnulerReservationService` pour l'annulation de réservation et la libération de créneau
+
+## [0.9.0] 
+### Ajouté
+- Contrôleur `App\Controller\SalleController` (actions index, show, create, store, edit, update, toggle)
+- Contrôleur `App\Controller\ReservationController` (actions index, show, create, store, cancel)
+- Moteur de vues sécurisé `App\View\ViewRenderer` avec layout principal et support des messages flash
+- Templates pour les salles (`templates/salle/index.php`, `show.php`, `form.php`)
+- Templates pour les réservations (`templates/reservation/index.php`, `show.php`, `form.php`)
+- Templates d'erreur HTTP (`templates/error/404.php`, `templates/error/405.php`)
