@@ -45,3 +45,14 @@ Application web moderne en PHP orienté objet sans framework complet, permettant
 
 4. Pourquoi convertir les dates en objets ?
    Le cast `'datetime'` convertit automatiquement les chaînes SQL (`2026-09-06 10:00:00`) en instances `Carbon` / `DateTimeInterface`. Cela permet d'effectuer des comparaisons fiables, des calculs d'intervalles et des formatages personnalisés (`$date->format('d/m/Y')`) sans ré-instanciation manuelle.
+
+### Étape 4 — Données Initiales (Seed)
+
+1. Quelle différence existe entre migration et seeder ?
+   Une migration définit et fait évoluer la structure (schéma DDL : tables, colonnes, index, contraintes). Un seeder peuple la base avec des données (salles par défaut, données de test, comptes initiaux) cest comme les fixtures.
+
+2. Pourquoi les données initiales doivent-elles être reproductibles ?
+   Pour que chaque collaborateur ou environnement de test/déploiement puisse repartir d'un jeu de données fiable, cohérent et identique en une seule commande.
+
+3. Comment empêcher les doublons ?
+   En utilisant une condition d'unicité basée sur un critère distinctif (ici `nom`), par exemple via `Salle::updateOrCreate(['nom' => $data['nom']], $data)` ou en vérifiant l'existence avant insertion.
