@@ -19,6 +19,7 @@ switch ($command) {
         break;
     case 'seed':
         require_once dirname(__DIR__) . '/database/Seed.php';
+        (new \Database\Seed())->run();
         break;
     default:
         echo "Commandes disponibles: migrate, seed \n";

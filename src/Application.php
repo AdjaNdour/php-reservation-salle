@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App;
 
+use App\Service\InterfaceAuthService;
 use App\View\ViewRenderer;
 use FastRoute\Dispatcher;
 use Psr\Container\ContainerInterface;
@@ -27,6 +28,25 @@ class Application
             $uri = substr($uri, 0, $pos);
         }
         $uri = rawurldecode($uri);
+
+        // Contrôle d'accès : seule la page d'authentification est accessible hors connexion
+        /** @var InterfaceAuthService $authService */
+        $authService = $this->container->get(InterfaceAuthService::class);
+        $publicRoutes = ['/login', '/register'];
+
+        if (!$authService->estConnecte()) {
+            if (!in_array($uri, $publicRoutes, true)) {
+                if (session_status() === PHP_SESSION_NONE && !headers_sent()) {
+                    session_start();
+                }
+                $_SESSION['flash_error'] = "Veuillez vous connecter pour accéder à l'application.";
+                header('Location: /login');
+                exit;
+            }
+        } elseif ($uri === '/') {
+            header('Location: /salles');
+            exit;
+        }
 
         $routeInfo = $this->dispatcher->dispatch($httpMethod, $uri);
 

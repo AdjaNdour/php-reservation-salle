@@ -57,6 +57,35 @@ class Seed
             );
         }
 
+        echo "\nInitialisation des comptes utilisateurs de test...\n";
+
+        $utilisateursInitiaux = [
+            [
+                'nom'      => 'Adja Ndour',
+                'email'    => 'adja@univ.sn',
+                'password' => password_hash('passer123', PASSWORD_BCRYPT),
+            ],
+            [
+                'nom'      => 'Administrateur',
+                'email'    => 'admin@univ.sn',
+                'password' => password_hash('admin123', PASSWORD_BCRYPT),
+            ],
+        ];
+
+        foreach ($utilisateursInitiaux as $userData) {
+            $user = \App\Model\Utilisateur::updateOrCreate(
+                ['email' => $userData['email']],
+                $userData
+            );
+
+            echo sprintf(
+                " Utilisateur '%s' (%s) ID: %d initialisé.\n",
+                $user->nom,
+                $user->email,
+                $user->id
+            );
+        }
+
         echo "\nDonnées initiales insérées avec succès sans doublons !\n";
     }
 }

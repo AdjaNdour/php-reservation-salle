@@ -6,8 +6,10 @@ namespace Tests\Integration;
 
 use App\Model\Reservation;
 use App\Model\Salle;
+use App\Model\Utilisateur;
 use App\Repository\EloquentReservationRepository;
 use App\Repository\EloquentSalleRepository;
+use App\Repository\EloquentUtilisateurRepository;
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 
@@ -15,6 +17,7 @@ class EloquentIntegrationTest extends TestCase
 {
     private EloquentSalleRepository $salleRepo;
     private EloquentReservationRepository $resRepo;
+    private EloquentUtilisateurRepository $userRepo;
 
     public static function setUpBeforeClass(): void
     {
@@ -26,6 +29,7 @@ class EloquentIntegrationTest extends TestCase
     {
         $this->salleRepo = new EloquentSalleRepository();
         $this->resRepo = new EloquentReservationRepository();
+        $this->userRepo = new EloquentUtilisateurRepository();
     }
 
     /**
@@ -196,5 +200,37 @@ class EloquentIntegrationTest extends TestCase
 
         $supprimeInexistant = $this->salleRepo->delete(99999);
         $this->assertFalse($supprimeInexistant);
+    }
+
+    /**
+     * 7. Test de persistance et recherche d'un utilisateur avec Eloquent.
+     */
+    public function testGestionUtilisateurViaRepository(): void
+    {
+        $testEmail = 'integration_test_' . uniqid() . '@univ.sn';
+        $user = new Utilisateur([
+            'nom'      => 'Utilisateur Test Intégration',
+            'email'    => $testEmail,
+            'password' => password_hash('motdepasse123', PASSWORD_BCRYPT),
+        ]);
+
+        $savedUser = $this->userRepo->save($user);
+        $this->assertNotNull($savedUser->id);
+        $this->assertGreaterThan(0, $savedUser->id);
+
+        $retrievedByEmail = $this->userRepo->findByEmail($testEmail);
+        $this->assertNotNull($retrievedByEmail);
+        $this->assertSame('Utilisateur Test Intégration', $retrievedByEmail->nom);
+        $this->assertTrue($retrievedByEmail->verifierMotDePasse('motdepasse123'));
+        $this->assertFalse($retrievedByEmail->verifierMotDePasse('faux_mdp'));
+
+        $retrievedById = $this->userRepo->findById($savedUser->id);
+        $this->assertNotNull($retrievedById);
+        $this->assertSame($testEmail, $retrievedById->email);
+
+        // Nettoyage
+        $deleted = $this->userRepo->delete($savedUser->id);
+        $this->assertTrue($deleted);
+        $this->assertNull($this->userRepo->findById($savedUser->id));
     }
 }

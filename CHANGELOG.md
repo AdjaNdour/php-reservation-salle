@@ -105,3 +105,15 @@ et ce projet adhère à [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - Analyse architecturale détaillée des 14 concepts et des 5 principes SOLID dans `ARCHITECTURE.md`
 - Validation des 8 scénarios de recette
 - correction des anomalies
+
+## [1.1.0]
+### Ajouté
+- Modèle Eloquent `App\Model\Utilisateur` avec sécurisation des mots de passe (`password_hash`, `password_verify`)
+- Contrat de persistance `App\Repository\UtilisateurRepositoryInterface` et implémentation `App\Repository\EloquentUtilisateurRepository`
+- DTO de transport `App\DTO\LoginDTO` et `App\DTO\InscriptionDTO`
+- Validateurs d'authentification `App\Validation\LoginValidator` et `App\Validation\InscriptionValidator` basés sur `Respect\Validation`
+- Service d'authentification `App\Service\AuthService` et contrat `App\Service\InterfaceAuthService` (gestion de session, régénération d'ID, déconnexion)
+- Contrôleur d'authentification `App\Controller\AuthController` (actions login, logout, register)
+- Vues d'authentification (`templates/auth/login.php` et `templates/auth/register.php`) et intégration dans la barre de navigation
+- Seeding d'utilisateurs de test (`adja@univ.sn` et `admin@univ.sn`) dans `database/Seed.php`
+- Tests unitaires et d'intégration complets avec doublure mémoire `InMemoryUtilisateurRepository` (59 tests réussis à 100%)

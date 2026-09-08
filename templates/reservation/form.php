@@ -1,7 +1,7 @@
 <?php
 $valSalleId = (string) ($data['salle_id'] ?? '');
-$valResponsable = (string) ($data['responsable'] ?? '');
-$valEmail = (string) ($data['email'] ?? '');
+$valResponsable = (string) ($data['responsable'] ?? ($_SESSION['user']['nom'] ?? ''));
+$valEmail = (string) ($data['email'] ?? ($_SESSION['user']['email'] ?? ''));
 $valMotif = (string) ($data['motif'] ?? '');
 $valDateDebut = (string) ($data['date_debut'] ?? '');
 $valDateFin = (string) ($data['date_fin'] ?? '');
