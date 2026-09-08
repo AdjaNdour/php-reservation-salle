@@ -7,7 +7,7 @@ namespace App\DTO;
 use App\Validation\SalleValidator;
 final class CreerSalleDTO
 {
-    public function __construct(
+    private function __construct(
         public readonly string $nom,
         public readonly string $batiment,
         public readonly int $capacite,
@@ -15,16 +15,21 @@ final class CreerSalleDTO
         public readonly bool $active = true
     ) {}
 
-    public static function fromArray(array $data): self
+    public static function fromArray(array $data, ?SalleValidator $salleValidator = null): self
     {
-        $validationResult = (new SalleValidator())->validate($data);
+        if ($salleValidator !== null) {
+            $validationResult = $salleValidator->validate($data);
+            if ($validationResult->isValid()) {
+                $data = $validationResult->validatedData();
+            }
+        }
 
         return new self(
-            nom: $validationResult->validatedData()['nom'] ,
-            batiment: $validationResult->validatedData()['batiment'] ,
-            capacite: (int) ($validationResult->validatedData()['capacite'] ),
-            type: $validationResult->validatedData()['type'] ,
-            active: filter_var($validationResult->validatedData()['active'] )
+            nom: (string) ($data['nom'] ?? ''),
+            batiment: (string) ($data['batiment'] ?? ''),
+            capacite: (int) ($data['capacite'] ?? 0),
+            type: (string) ($data['type'] ?? ''),
+            active: isset($data['active']) ? (bool) $data['active'] : true
         );
     }
 

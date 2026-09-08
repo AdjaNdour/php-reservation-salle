@@ -39,4 +39,14 @@ class EloquentSalleRepository implements SalleRepositoryInterface
         $salle->active = !$salle->active;
         return $salle->save();
     }
+
+    public function delete(int $id): bool
+    {
+        $salle = $this->findById($id);
+        if ($salle === null) {
+            return false;
+        }
+
+        return (bool) $salle->delete();
+    }
 }

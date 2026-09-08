@@ -43,12 +43,15 @@
                                     <span class="badge badge-danger">Inactive</span>
                                 <?php endif; ?>
                             </td>
-                            <td style="text-align: right;">
+                            <td style="text-align: right; white-space: nowrap;">
                                 <a href="/salles/<?= $salle->id ?>" class="btn btn-secondary btn-sm">Détail</a>
                                 <a href="/salles/<?= $salle->id ?>/edit" class="btn btn-secondary btn-sm">Modifier</a>
                                 <?php if ($salle->active): ?>
                                     <a href="/reservations/create?salle_id=<?= $salle->id ?>" class="btn btn-primary btn-sm">Réserver</a>
                                 <?php endif; ?>
+                                <form method="POST" action="/salles/<?= $salle->id ?>/delete" style="display: inline;" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette salle ?');">
+                                    <button type="submit" class="btn btn-danger btn-sm">Supprimer</button>
+                                </form>
                             </td>
                         </tr>
                     <?php endforeach; ?>

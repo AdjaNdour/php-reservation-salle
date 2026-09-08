@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit;
 
 use App\DTO\CreerReservationDTO;
+use App\DTO\CreerReservationDTOBuilder;
 use App\Exception\ReservationIntrouvableException;
 use App\Exception\SalleIndisponibleException;
 use App\Model\Reservation;
@@ -19,6 +20,7 @@ class CreerReservationServiceTest extends TestCase
     private InMemorySalleRepository $salleRepository;
     private InMemoryReservationRepository $reservationRepository;
     private CreerReservationService $service;
+    private CreerReservationDTOBuilder $builder;
     private Salle $salleActive;
     private Salle $salleInactive;
 
@@ -27,6 +29,7 @@ class CreerReservationServiceTest extends TestCase
         $this->salleRepository = new InMemorySalleRepository();
         $this->reservationRepository = new InMemoryReservationRepository();
         $this->service = new CreerReservationService($this->salleRepository, $this->reservationRepository);
+        $this->builder = new CreerReservationDTOBuilder();
 
         // Salle active pour les tests
         $this->salleActive = new Salle([
@@ -58,14 +61,14 @@ class CreerReservationServiceTest extends TestCase
         $debut = $demain->setTime(10, 0);
         $fin = $demain->setTime(12, 0);
 
-        $dto = new CreerReservationDTO(
-            salleId: $this->salleActive->id,
-            responsable: 'Awa Ndiaye',
-            email: 'awa.ndiaye@universite.sn',
-            motif: 'Cours d\'architecture logicielle',
-            dateDebut: $debut,
-            dateFin: $fin
-        );
+        $dto = $this->builder
+            ->setSalleId($this->salleActive->id)
+            ->setResponsable('Awa Ndiaye')
+            ->setEmail('awa.ndiaye@universite.sn')
+            ->setMotif('Cours d\'architecture logicielle')
+            ->setDateDebut($debut)
+            ->setDateFin($fin)
+            ->build();
 
         $reservation = $this->service->executer($dto);
 
@@ -73,6 +76,31 @@ class CreerReservationServiceTest extends TestCase
         $this->assertSame($this->salleActive->id, $reservation->salle_id);
         $this->assertSame('Awa Ndiaye', $reservation->responsable);
         $this->assertSame(Reservation::STATUT_CONFIRMEE, $reservation->statut);
+    }
+
+    public function testReservationChangeStatutSalleAInactive(): void
+    {
+        $demain = new \DateTimeImmutable('+1 day');
+        $debut = $demain->setTime(10, 0);
+        $fin = $demain->setTime(12, 0);
+
+        $dto = $this->builder
+            ->setSalleId($this->salleActive->id)
+            ->setResponsable('Awa Ndiaye')
+            ->setEmail('awa.ndiaye@universite.sn')
+            ->setMotif('Cours de PHP POO')
+            ->setDateDebut($debut)
+            ->setDateFin($fin)
+            ->build();
+
+        $this->assertTrue($this->salleRepository->findById($this->salleActive->id)->estActive());
+
+        $this->service->executer($dto);
+
+        $salleApres = $this->salleRepository->findById($this->salleActive->id);
+        $this->assertNotNull($salleApres);
+        $this->assertFalse($salleApres->estActive());
+        $this->assertFalse($salleApres->active);
     }
 
     
@@ -84,14 +112,14 @@ class CreerReservationServiceTest extends TestCase
         $this->expectExceptionMessage("La salle demandée n'existe pas.");
 
         $demain = new \DateTimeImmutable('+1 day');
-        $dto = new CreerReservationDTO(
-            salleId: 99999, // Inexistante
-            responsable: 'Awa Ndiaye',
-            email: 'awa.ndiaye@universite.sn',
-            motif: 'Soutenance de mémoire',
-            dateDebut: $demain->setTime(14, 0),
-            dateFin: $demain->setTime(16, 0)
-        );
+        $dto = $this->builder
+            ->setSalleId(99999) // Inexistante
+            ->setResponsable('Awa Ndiaye')
+            ->setEmail('awa.ndiaye@universite.sn')
+            ->setMotif('Soutenance de mémoire')
+            ->setDateDebut($demain->setTime(14, 0))
+            ->setDateFin($demain->setTime(16, 0))
+            ->build();
 
         $this->service->executer($dto);
     }
@@ -105,14 +133,14 @@ class CreerReservationServiceTest extends TestCase
         $this->expectExceptionMessage("Cette salle ne peut pas être réservée car elle est inactive.");
 
         $demain = new \DateTimeImmutable('+1 day');
-        $dto = new CreerReservationDTO(
-            salleId: $this->salleInactive->id,
-            responsable: 'Adja Ndour',
-            email: 'adja@universite.sn',
-            motif: 'Réunion d\'équipe pédagogique',
-            dateDebut: $demain->setTime(14, 0),
-            dateFin: $demain->setTime(16, 0)
-        );
+        $dto = $this->builder
+            ->setSalleId($this->salleInactive->id)
+            ->setResponsable('Adja Ndour')
+            ->setEmail('adja@universite.sn')
+            ->setMotif('Réunion d\'équipe pédagogique')
+            ->setDateDebut($demain->setTime(14, 0))
+            ->setDateFin($demain->setTime(16, 0))
+            ->build();
 
         $this->service->executer($dto);
     }
@@ -129,14 +157,14 @@ class CreerReservationServiceTest extends TestCase
         $debut = $demain->setTime(14, 0);
         $fin = $demain->setTime(12, 0); // Antérieur
 
-        $dto = new CreerReservationDTO(
-            salleId: $this->salleActive->id,
-            responsable: 'Awa Ndiaye',
-            email: 'awa@universite.sn',
-            motif: 'Séance de révision',
-            dateDebut: $debut,
-            dateFin: $fin
-        );
+        $dto = $this->builder
+            ->setSalleId($this->salleActive->id)
+            ->setResponsable('Awa Ndiaye')
+            ->setEmail('awa@universite.sn')
+            ->setMotif('Séance de révision')
+            ->setDateDebut($debut)
+            ->setDateFin($fin)
+            ->build();
 
         $this->service->executer($dto);
     }
@@ -153,14 +181,14 @@ class CreerReservationServiceTest extends TestCase
         $debut = $demain->setTime(8, 0);
         $fin = $demain->setTime(14, 0); // 6 heures
 
-        $dto = new CreerReservationDTO(
-            salleId: $this->salleActive->id,
-            responsable: 'Awa Ndiaye',
-            email: 'awa@universite.sn',
-            motif: 'Journée d\'intégration',
-            dateDebut: $debut,
-            dateFin: $fin
-        );
+        $dto = $this->builder
+            ->setSalleId($this->salleActive->id)
+            ->setResponsable('Awa Ndiaye')
+            ->setEmail('awa@universite.sn')
+            ->setMotif('Journée d\'intégration')
+            ->setDateDebut($debut)
+            ->setDateFin($fin)
+            ->build();
 
         $this->service->executer($dto);
     }
@@ -177,14 +205,14 @@ class CreerReservationServiceTest extends TestCase
         $debut = $hier->setTime(10, 0);
         $fin = $hier->setTime(12, 0);
 
-        $dto = new CreerReservationDTO(
-            salleId: $this->salleActive->id,
-            responsable: 'Awa Ndiaye',
-            email: 'awa@universite.sn',
-            motif: 'Cours passé',
-            dateDebut: $debut,
-            dateFin: $fin
-        );
+        $dto = $this->builder
+            ->setSalleId($this->salleActive->id)
+            ->setResponsable('Awa Ndiaye')
+            ->setEmail('awa@universite.sn')
+            ->setMotif('Cours passé')
+            ->setDateDebut($debut)
+            ->setDateFin($fin)
+            ->build();
 
         $this->service->executer($dto);
     }
@@ -212,14 +240,14 @@ class CreerReservationServiceTest extends TestCase
         $this->expectException(SalleIndisponibleException::class);
         $this->expectExceptionMessage("La salle est indisponible pendant cette période.");
 
-        $dtoConflit = new CreerReservationDTO(
-            salleId: $this->salleActive->id,
-            responsable: 'Fatou Ba',
-            email: 'fatou@universite.sn',
-            motif: 'Atelier design pattern',
-            dateDebut: $demain->setTime(11, 30),
-            dateFin: $demain->setTime(13, 0)
-        );
+        $dtoConflit = $this->builder
+            ->setSalleId($this->salleActive->id)
+            ->setResponsable('Fatou Ba')
+            ->setEmail('fatou@universite.sn')
+            ->setMotif('Atelier design pattern')
+            ->setDateDebut($demain->setTime(11, 30))
+            ->setDateFin($demain->setTime(13, 0))
+            ->build();
 
         $this->service->executer($dtoConflit);
     }
@@ -244,18 +272,37 @@ class CreerReservationServiceTest extends TestCase
         $this->reservationRepository->save($res1);
 
         // Réservation 2 voisine : 12h00 -> 14h00 (doit réussir sans conflit)
-        $dtoVoisine = new CreerReservationDTO(
-            salleId: $this->salleActive->id,
-            responsable: 'Awa Ndiaye',
-            email: 'awa.ndiaye@universite.sn',
-            motif: 'Cours Génie Logiciel',
-            dateDebut: $demain->setTime(12, 0),
-            dateFin: $demain->setTime(14, 0)
-        );
+        $dtoVoisine = $this->builder
+            ->setSalleId($this->salleActive->id)
+            ->setResponsable('Awa Ndiaye')
+            ->setEmail('awa.ndiaye@universite.sn')
+            ->setMotif('Cours Génie Logiciel')
+            ->setDateDebut($demain->setTime(12, 0))
+            ->setDateFin($demain->setTime(14, 0))
+            ->build();
 
         $res2 = $this->service->executer($dtoVoisine);
 
         $this->assertNotNull($res2->id);
         $this->assertSame(Reservation::STATUT_CONFIRMEE, $res2->statut);
+    }
+
+    // 9. Test de création via builder fromArray
+    public function testCreationReservationViaBuilderFromArray(): void
+    {
+        $demain = new \DateTimeImmutable('+2 days');
+        $dto = $this->builder->fromArray([
+            'salle_id'    => $this->salleActive->id,
+            'responsable' => 'Ibrahima Diallo',
+            'email'       => 'ibrahima@universite.sn',
+            'motif'       => 'Examen final',
+            'date_debut'  => $demain->setTime(8, 0),
+            'date_fin'    => $demain->setTime(10, 0),
+        ])->build();
+
+        $reservation = $this->service->executer($dto);
+
+        $this->assertNotNull($reservation->id);
+        $this->assertSame('Ibrahima Diallo', $reservation->responsable);
     }
 }

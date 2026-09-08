@@ -97,3 +97,11 @@ et ce projet adhère à [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - Tests unitaires complets de `CreerReservationService` (8 scénarios obligatoires) sans dépendance MySQL
 - Tests unitaires de validation avec `Respect\Validation` (5 scénarios obligatoires)
 - Tests d'intégration Eloquent (création, relation HasMany/BelongsTo, recherche de conflit, annulation)
+
+## [1.0.0]
+### Ajouté
+- Finalisation complète de l'application web de gestion des réservations de salles universitaires
+- Documentation exhaustive dans `README.md` (guide de démarrage, migrations, seeder, exécution des tests et réponses aux questions de toutes les étapes)
+- Analyse architecturale détaillée des 14 concepts et des 5 principes SOLID dans `ARCHITECTURE.md`
+- Validation des 8 scénarios de recette
+- correction des anomalies

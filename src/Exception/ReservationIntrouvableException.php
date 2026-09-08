@@ -8,4 +8,5 @@ use DomainException;
 
 class ReservationIntrouvableException extends DomainException
 {
+    
 }

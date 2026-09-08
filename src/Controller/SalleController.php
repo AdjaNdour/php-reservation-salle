@@ -5,26 +5,25 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\DTO\CreerSalleDTO;
+use App\DTO\CreerSalleDTOBuilder;
 use App\Model\Salle;
 use App\Repository\SalleRepositoryInterface;
+use App\Service\InterfaceSalleService;
 use App\Validation\SalleValidator;
 use App\View\ViewRenderer;
 
 class SalleController
 {
     public function __construct(
-        private SalleRepositoryInterface $salles,
+        private InterfaceSalleService $salleService,
+        private CreerSalleDTOBuilder $builderSalle,
         private SalleValidator $validator,
         private ViewRenderer $view
-    ) {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-    }
+    ) {}
 
     public function index(): void
     {
-        $salles = $this->salles->findAll();
+        $salles = $this->salleService->getAll();
         $this->view->render('salle/index', [
             'titre'  => 'Liste des salles',
             'salles' => $salles,
@@ -33,7 +32,7 @@ class SalleController
 
     public function show(int $id): void
     {
-        $salle = $this->salles->findById($id);
+        $salle = $this->salleService->getById($id);
 
         if ($salle === null) {
             http_response_code(404);
@@ -78,9 +77,16 @@ class SalleController
             return;
         }
 
-        $dto = CreerSalleDTO::fromArray($validationResult->validatedData());
-        $salle = new Salle($dto->toArray());
-        $this->salles->save($salle);
+        $data = $_POST;
+        $dto = $this->builderSalle
+            ->setNom($data['nom'])
+            ->setBatiment($data['batiment'])
+            ->setCapacite((int) $data['capacite'])
+            ->setType($data['type'])
+            ->setActive((bool) ($data['active'] ?? true))
+            ->build();
+
+        $salle = $this->salleService->save($dto);
 
         $_SESSION['flash_success'] = "La salle « {$salle->nom} » a été créée avec succès.";
         header('Location: /salles');
@@ -89,7 +95,7 @@ class SalleController
 
     public function edit(int $id): void
     {
-        $salle = $this->salles->findById($id);
+        $salle = $this->salleService->getById($id);
 
         if ($salle === null) {
             http_response_code(404);
@@ -116,7 +122,7 @@ class SalleController
 
     public function update(int $id): void
     {
-        $salle = $this->salles->findById($id);
+        $salle = $this->salleService->getById($id);
 
         if ($salle === null) {
             http_response_code(404);
@@ -140,18 +146,25 @@ class SalleController
             return;
         }
 
-        $dto = CreerSalleDTO::fromArray($validationResult->validatedData());
-        $salle->fill($dto->toArray());
-        $this->salles->save($salle);
+        $data = $validationResult->validatedData();
+        $dto = $this->builderSalle
+            ->setNom($data['nom'])
+            ->setBatiment($data['batiment'])
+            ->setCapacite((int) $data['capacite'])
+            ->setType($data['type'])
+            ->setActive((bool) ($data['active'] ?? true))
+            ->build();
 
-        $_SESSION['flash_success'] = "La salle « {$salle->nom} » a été modifiée avec succès.";
+        $salleModifiee = $this->salleService->save($dto, $id);
+
+        $_SESSION['flash_success'] = "La salle « {$salleModifiee->nom} » a été modifiée avec succès.";
         header('Location: /salles/' . $id);
         exit;
     }
 
     public function toggle(int $id): void
     {
-        $salle = $this->salles->findById($id);
+        $salle = $this->salleService->getById($id);
         if ($salle === null) {
             http_response_code(404);
             $this->view->render('error/404', [
@@ -161,12 +174,32 @@ class SalleController
             return;
         }
 
-        $this->salles->toggleActive($id);
+        $this->salleService->toggleActive($id);
         $nouvelEtat = !$salle->active ? 'activée' : 'désactivée';
         $_SESSION['flash_success'] = "La salle « {$salle->nom} » a été {$nouvelEtat}.";
 
         $referer = $_SERVER['HTTP_REFERER'] ?? '/salles';
         header('Location: ' . $referer);
+        exit;
+    }
+
+    public function delete(int $id): void
+    {
+        $salle = $this->salleService->getById($id);
+        if ($salle === null) {
+            http_response_code(404);
+            $this->view->render('error/404', [
+                'titre'   => 'Salle introuvable',
+                'message' => "La salle demandée n'existe pas.",
+            ]);
+            return;
+        }
+
+        $nom = $salle->nom;
+        $this->salleService->delete($id);
+        $_SESSION['flash_success'] = "La salle « {$nom} » a été supprimée avec succès.";
+
+        header('Location: /salles');
         exit;
     }
 }

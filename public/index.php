@@ -7,7 +7,9 @@ use DI\ContainerBuilder;
 use Illuminate\Database\Capsule\Manager as CapsuleManager;
 
 require dirname(__DIR__) . '/vendor/autoload.php';
-
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 $builder = new ContainerBuilder();
 
 $builder->useAutowiring(true);

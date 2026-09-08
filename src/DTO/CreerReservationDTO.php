@@ -4,29 +4,42 @@ namespace App\DTO;
 
 use App\Validation\ReservationValidator;
 use DateTimeImmutable;
-use App\Validation\ValidationResult;
 
 final class CreerReservationDTO
 {
-    public function __construct(
+    private function __construct(
         public readonly int $salleId,
         public readonly string $responsable,
         public readonly string $email,
         public readonly string $motif,
         public readonly DateTimeImmutable $dateDebut,
-        public readonly DateTimeImmutable $dateFin
+        public readonly DateTimeImmutable $dateFin,
     ) {}
 
-    public static function fromArray(array $data): self
+    public static function fromArray(array $data, ?ReservationValidator $reservationValidator = null): self
     {
-        $validationResult = (new ReservationValidator())->validate($data);
+        if ($reservationValidator !== null) {
+            $validationResult = $reservationValidator->validate($data);
+            if ($validationResult->isValid()) {
+                $data = $validationResult->validatedData();
+            }
+        }
+
+        $dateDebut = isset($data['date_debut'])
+            ? ($data['date_debut'] instanceof DateTimeImmutable ? $data['date_debut'] : new DateTimeImmutable((string) $data['date_debut']))
+            : new DateTimeImmutable();
+
+        $dateFin = isset($data['date_fin'])
+            ? ($data['date_fin'] instanceof DateTimeImmutable ? $data['date_fin'] : new DateTimeImmutable((string) $data['date_fin']))
+            : new DateTimeImmutable();
+
         return new self(
-            salleId: (int) ($validationResult->validatedData()['salle_id']),
-            responsable: $validationResult->validatedData()['responsable'] ,
-            email: $validationResult->validatedData()['email'] ,
-            motif: $validationResult->validatedData()['motif'] ,
-            dateDebut: new DateTimeImmutable($validationResult->validatedData()['date_debut'] ),
-            dateFin: new DateTimeImmutable($validationResult->validatedData()['date_fin'])
+            salleId: (int) ($data['salle_id'] ?? 0),
+            responsable: (string) ($data['responsable'] ?? ''),
+            email: (string) ($data['email'] ?? ''),
+            motif: (string) ($data['motif'] ?? ''),
+            dateDebut: $dateDebut,
+            dateFin: $dateFin
         );
     }
 

@@ -10,6 +10,7 @@ use App\Model\Reservation;
 use App\Repository\ReservationRepositoryInterface;
 use App\Repository\SalleRepositoryInterface;
 use App\Exception\ReservationIntrouvableException;
+use App\Model\Salle;
 
 final class CreerReservationService
 {
@@ -20,7 +21,7 @@ final class CreerReservationService
 
     public function executer(CreerReservationDTO $dto): Reservation
     {
-        $this->verifierSalle($dto);
+        $salle = $this->verifierSalle($dto);
         $this->verifierDates($dto);
         $this->verifierDuree($dto);
         $this->verifierDateFuture($dto);
@@ -36,7 +37,12 @@ final class CreerReservationService
             'statut' => Reservation::STATUT_CONFIRMEE,
         ]);
 
-        return $this->repoReservations->save($reservation);
+        $reservationSauvegardee = $this->repoReservations->save($reservation);
+
+        $salle->active = false;
+        $this->repoSalles->save($salle);
+
+        return $reservationSauvegardee;
     }
 
 
@@ -55,7 +61,7 @@ final class CreerReservationService
         }
     }
 
-    private function verifierSalle(CreerReservationDTO $dto): void
+    private function verifierSalle(CreerReservationDTO $dto): Salle
     {
         $salle = $this->repoSalles->findById($dto->salleId);
 
@@ -66,6 +72,8 @@ final class CreerReservationService
         if (!$salle->estActive()) {
             throw new SalleIndisponibleException("Cette salle ne peut pas être réservée car elle est inactive.");
         }
+
+        return $salle;
     }
 
     private function verifierDateFuture(CreerReservationDTO $dto): void

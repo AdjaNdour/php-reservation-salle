@@ -41,4 +41,14 @@ class InMemorySalleRepository implements SalleRepositoryInterface
         $this->salles[$id]->active = !$this->salles[$id]->active;
         return true;
     }
+
+    public function delete(int $id): bool
+    {
+        if (!isset($this->salles[$id])) {
+            return false;
+        }
+
+        unset($this->salles[$id]);
+        return true;
+    }
 }

@@ -9,7 +9,7 @@ use DateTimeInterface;
 
 class EloquentReservationRepository implements ReservationRepositoryInterface
 {
-    
+
     public function findAll(?int $salleId = null): array
     {
         $query = Reservation::query()->with('salle')->orderBy('date_debut', 'desc');
@@ -26,6 +26,12 @@ class EloquentReservationRepository implements ReservationRepositoryInterface
         return Reservation::query()->with('salle')->find($id);
     }
 
+    public function save(Reservation $reservation): Reservation
+    {
+        $reservation->save();
+        return $reservation;
+    }
+
     public function findConflictingReservation(int $salleId, DateTimeInterface $debut, DateTimeInterface $fin): ?Reservation
     {
         return Reservation::query()
@@ -35,13 +41,6 @@ class EloquentReservationRepository implements ReservationRepositoryInterface
             ->where('date_fin', '>', $debut->format('Y-m-d H:i:s'))
             ->first();
     }
-
-    public function save(Reservation $reservation): Reservation
-    {
-        $reservation->save();
-        return $reservation;
-    }
-
     public function cancel(int $id): bool
     {
         $reservation = $this->findById($id);

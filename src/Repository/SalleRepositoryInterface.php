@@ -15,4 +15,6 @@ interface SalleRepositoryInterface
     public function save(Salle $salle): Salle;
 
     public function toggleActive(int $id): bool;
+
+    public function delete(int $id): bool;
 }

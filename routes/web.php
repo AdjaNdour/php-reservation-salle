@@ -17,6 +17,8 @@ return static function (RouteCollector $r): void {
     $r->addRoute('GET', '/salles/{id:\d+}/edit', [SalleController::class, 'edit']);
     $r->addRoute('POST', '/salles/{id:\d+}/edit', [SalleController::class, 'update']);
     $r->addRoute('POST', '/salles/{id:\d+}/toggle', [SalleController::class, 'toggle']);
+    $r->addRoute('POST', '/salles/{id:\d+}/delete', [SalleController::class, 'delete']);
+    $r->addRoute('DELETE', '/salles/{id:\d+}', [SalleController::class, 'delete']);
 
     $r->addRoute('GET', '/reservations', [ReservationController::class, 'index']);
     $r->addRoute('GET', '/reservations/create', [ReservationController::class, 'create']);

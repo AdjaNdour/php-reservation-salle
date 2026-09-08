@@ -4,29 +4,28 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\DTO\CreerReservationDTO;
+use App\DTO\CreerReservationDTOBuilder;
 use App\Exception\ReservationIntrouvableException;
 use App\Exception\SalleIndisponibleException;
-use App\Repository\ReservationRepositoryInterface;
-use App\Repository\SalleRepositoryInterface;
 use App\Service\AnnulerReservationService;
 use App\Service\CreerReservationService;
+use App\Service\InterfaceReservationService;
+use App\Service\InterfaceSalleService;
 use App\Validation\ReservationValidator;
 use App\View\ViewRenderer;
 
 class ReservationController
 {
     public function __construct(
-        private ReservationRepositoryInterface $reservations,
-        private SalleRepositoryInterface $salles,
+        private InterfaceReservationService $reservationsService,
+        private InterfaceSalleService $salleService,
         private ReservationValidator $validator,
         private CreerReservationService $creerService,
         private AnnulerReservationService $annulerService,
-        private ViewRenderer $view
+        private ViewRenderer $view,
+        private CreerReservationDTOBuilder $builderReservation
     ) {
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
+
     }
 
     public function index(): void
@@ -35,8 +34,8 @@ class ReservationController
             ? (int) $_GET['salle_id']
             : null;
 
-        $reservations = $this->reservations->findAll($salleId);
-        $salles = $this->salles->findAll();
+        $reservations = $this->reservationsService->getAll($salleId);
+        $salles = $this->salleService->getAll();
 
         $this->view->render('reservation/index', [
             'titre'           => 'Gestion des réservations',
@@ -48,7 +47,7 @@ class ReservationController
 
     public function show(int $id): void
     {
-        $reservation = $this->reservations->findById($id);
+        $reservation = $this->reservationsService->getById($id);
 
         if ($reservation === null) {
             http_response_code(404);
@@ -67,51 +66,73 @@ class ReservationController
 
     public function create(): void
     {
-        $salles = $this->salles->findAll();
+        $salles = $this->salleService->getAll();
         $salleId = $_GET['salle_id'] ?? '';
 
         $this->view->render('reservation/form', [
             'titre'  => 'Créer une réservation',
             'salles' => $salles,
             'errors' => [],
-            'data'   => [
-                'salle_id' => $salleId,
-            ],
+            'data'   => [ 'salle_id' => $salleId ],
         ]);
     }
 
     public function store(): void
-    {        
+    {
         $data = $_POST;
         $validationResult = $this->validator->validate($data);
         
         if (!$validationResult->isValid()) {
-            http_response_code(422);
-            $salles = $this->salles->findAll();
+            $salles = $this->salleService->getAll();
             $this->view->render('reservation/form', [
                 'titre'  => 'Créer une réservation',
                 'salles' => $salles,
                 'errors' => $validationResult->errors(),
-                'data'   => $data,
+                'data' => $data,
             ]);
             return;
         }
 
-        try {            
-            $dto = CreerReservationDTO::fromArray($validationResult->validatedData());
+        try {
+            $validatedData = $validationResult->validatedData();
+            $dto = $this->builderReservation
+                ->setSalleId((int) $validatedData['salle_id'])
+                ->setResponsable($validatedData['responsable'])
+                ->setEmail($validatedData['email'])
+                ->setMotif($validatedData['motif'])
+                ->setDateDebut(new \DateTimeImmutable($validatedData['date_debut']))
+                ->setDateFin(new \DateTimeImmutable($validatedData['date_fin']))
+                ->build();
+
             $reservation = $this->creerService->executer($dto);
+
             $_SESSION['flash_success'] = "La réservation #{$reservation->id} a été confirmée avec succès.";
             header('Location: /reservations/' . $reservation->id);
             exit;
-        } catch (SalleIndisponibleException $e) {
+        } catch (SalleIndisponibleException|ReservationIntrouvableException $e) {
             http_response_code(422);
-            $salles = $this->salles->findAll();
+            $salles = $this->salleService->getAll();
+            $errors = [];
+            $message = $e->getMessage();
+
+            if (str_contains($message, 'futur')) {
+                $errors['date_debut'] = $message;
+            } elseif (str_contains($message, 'précéder')) {
+                $errors['date_debut'] = $message;
+            } elseif (str_contains($message, 'quatre heures')) {
+                $errors['date_fin'] = $message;
+            } elseif (str_contains($message, 'inactive') || str_contains($message, 'n\'existe pas')) {
+                $errors['salle_id'] = $message;
+            } else {
+                $errors['metier'] = $message;
+            }
+
             $this->view->render('reservation/form', [
                 'titre'        => 'Créer une réservation',
                 'salles'       => $salles,
-                'errors'       => ['metier' => $e->getMessage()],
+                'errors'       => $errors,
                 'data'         => $data,
-                'errorMessage' => $e->getMessage(),
+                'errorMessage' => $message,
             ]);
         }
     }

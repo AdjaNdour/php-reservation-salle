@@ -174,4 +174,27 @@ class EloquentIntegrationTest extends TestCase
         $res->delete();
         $salle->delete();
     }
+
+    /**
+     * 5. Test de suppression d'une salle via EloquentSalleRepository.
+     */
+    public function testSuppressionSalleViaRepository(): void
+    {
+        $salle = $this->salleRepo->save(new Salle([
+            'nom'      => 'Salle Test Suppression Repo',
+            'batiment' => 'Bâtiment S',
+            'capacite' => 45,
+            'type'     => 'cours',
+            'active'   => true,
+        ]));
+
+        $this->assertNotNull($this->salleRepo->findById($salle->id));
+
+        $supprime = $this->salleRepo->delete($salle->id);
+        $this->assertTrue($supprime);
+        $this->assertNull($this->salleRepo->findById($salle->id));
+
+        $supprimeInexistant = $this->salleRepo->delete(99999);
+        $this->assertFalse($supprimeInexistant);
+    }
 }
