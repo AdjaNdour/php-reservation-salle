@@ -13,7 +13,7 @@ Application web moderne en PHP orienté objet sans framework complet, permettant
    `require` contient les packages indispensables au fonctionnement de l'application en production (ex: FastRoute, Eloquent, PHP-DI). `require-dev` regroupe les outils réservés au développement et à l'assurance qualité (ex: PHPUnit), exclus en production via `composer install --no-dev`.
 
 3. Pourquoi faut-il versionner `composer.lock` ?
-   `composer.lock` enregistre l'arborescence exacte des versions et condensats SHA installés. Le versionner garantit que tous les développeurs, le serveur d'intégration continue et l'environnement de production partagent rigoureusement le même code au bit près.
+   `composer.lock` enregistre l'arborescence exacte des versions et condensats SHA installés. Le versionner garantit que tous les développeurs et l'environnement de production partagent rigoureusement le même code au bit près.
 
 4. Pourquoi ne versionne-t-on pas `vendor/` ?
    Le dossier `vendor/` est très volumineux, redondant et régénérable à tout moment via `composer install`. Le versionner encombrerait l'historique Git et introduirait des conflits de fusion insolubles lors des mises à jour de bibliothèques.

@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Tests\Unit\Doubles;
 
 use App\Model\Salle;
+use App\Pagination\Paginator;
 use App\Repository\SalleRepositoryInterface;
 
 class InMemorySalleRepository implements SalleRepositoryInterface
 {
-    
     private array $salles = [];
     private int $autoIncrement = 1;
 
@@ -21,6 +21,43 @@ class InMemorySalleRepository implements SalleRepositoryInterface
     public function findById(int $id): ?Salle
     {
         return $this->salles[$id] ?? null;
+    }
+
+    public function findByCriteria(array $criteria = []): array
+    {
+        $filtered = array_filter($this->salles, function (Salle $salle) use ($criteria) {
+            if (!empty($criteria['nom']) && stripos($salle->nom, $criteria['nom']) === false) {
+                return false;
+            }
+            if (!empty($criteria['batiment']) && stripos($salle->batiment, $criteria['batiment']) === false) {
+                return false;
+            }
+            if (!empty($criteria['type']) && $salle->type !== $criteria['type']) {
+                return false;
+            }
+            if (!empty($criteria['capacite_min']) && $salle->capacite < (int) $criteria['capacite_min']) {
+                return false;
+            }
+            if (isset($criteria['active']) && $criteria['active'] !== '') {
+                $expected = in_array($criteria['active'], [true, 1, '1', 'true', 'active'], true);
+                if ((bool) $salle->active !== $expected) {
+                    return false;
+                }
+            }
+            return true;
+        });
+
+        return array_values($filtered);
+    }
+
+    public function paginate(int $page = 1, int $perPage = 10, array $criteria = []): Paginator
+    {
+        $filtered = $this->findByCriteria($criteria);
+        $totalItems = count($filtered);
+        $offset = ($page - 1) * $perPage;
+        $items = array_slice($filtered, $offset, $perPage);
+
+        return new Paginator($items, $totalItems, $page, $perPage);
     }
 
     public function save(Salle $salle): Salle

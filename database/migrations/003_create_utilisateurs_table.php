@@ -8,9 +8,17 @@ if (!Capsule::schema()->hasTable('utilisateurs')) {
         $table->string('nom');
         $table->string('email')->unique();
         $table->string('password');
+        $table->string('role')->default('responsable');
         $table->timestamps();
     });
-    echo "Table utilisateurs créée !";
+    echo "Table utilisateurs créée !\n";
 } else {
-    echo "La table utilisateurs existe déjà.";
+    if (!Capsule::schema()->hasColumn('utilisateurs', 'role')) {
+        Capsule::schema()->table('utilisateurs', function ($table) {
+            $table->string('role')->default('responsable');
+        });
+        echo "Colonne 'role' ajoutée à la table utilisateurs !\n";
+    } else {
+        echo "La table utilisateurs existe déjà.\n";
+    }
 }

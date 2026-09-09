@@ -8,6 +8,7 @@
 </head>
 <body>
     <?php if (!empty($_SESSION['user'])): ?>
+    <?php $isAdmin = ($_SESSION['user']['role'] ?? '') === 'admin'; ?>
     <header>
         <nav class="navbar">
             <a href="/salles" class="navbar-brand">
@@ -15,11 +16,19 @@
             </a>
             <div class="navbar-links">
                 <a href="/salles">Salles</a>
-                <a href="/salles/create">+ Nouvelle salle</a>
+                <?php if ($isAdmin): ?>
+                    <a href="/salles/create">+ Nouvelle salle</a>
+                <?php endif; ?>
                 <a href="/reservations">Réservations</a>
+                <a href="/dashboard">📊 Tableau de bord</a>
                 <a href="/reservations/create" class="btn btn-primary btn-sm" style="color:#fff;">+ Réserver</a>
-                <span style="color: #94a3b8; font-size: 0.9rem; margin-left: 8px;">
+                <span style="color: #94a3b8; font-size: 0.9rem; margin-left: 8px; display: inline-flex; align-items: center; gap: 6px;">
                     👤 <?= htmlspecialchars($_SESSION['user']['nom'] ?? '') ?>
+                    <?php if ($isAdmin): ?>
+                        <span class="badge badge-danger" style="font-size: 0.7rem; padding: 2px 6px;">Admin</span>
+                    <?php else: ?>
+                        <span class="badge badge-info" style="font-size: 0.7rem; padding: 2px 6px;">Responsable</span>
+                    <?php endif; ?>
                 </span>
                 <a href="/logout" class="btn btn-secondary btn-sm" style="color:#e2e8f0; background-color:#334155; border-color:#475569;">
                     Déconnexion

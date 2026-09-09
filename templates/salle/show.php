@@ -1,10 +1,22 @@
+<?php 
+$isAdmin = ($_SESSION['user']['role'] ?? '') === 'admin'; 
+$hasReservations = !empty($reservations) && (!is_object($reservations) || !method_exists($reservations, 'isEmpty') || !$reservations->isEmpty());
+?>
+
 <div class="page-header">
     <h1>🏛️ <?= htmlspecialchars($salle->nom) ?></h1>
-    <div style="display: flex; gap: 10px;">
-        <a href="/salles/<?= $salle->id ?>/edit" class="btn btn-secondary">✏️ Modifier</a>
-        <form method="POST" action="/salles/<?= $salle->id ?>/edit" style="display: inline;">
-            <!-- Formulaire toggle ou édition -->
-        </form>
+    <div style="display: flex; gap: 10px; align-items: center;">
+        <?php if ($isAdmin): ?>
+            <a href="/salles/<?= $salle->id ?>/edit" class="btn btn-secondary">✏️ Modifier</a>
+            <form method="POST" action="/salles/<?= $salle->id ?>/toggle" style="display: inline;">
+                <button type="submit" class="btn btn-secondary">
+                    <?= $salle->active ? '⏸️ Désactiver' : '▶️ Activer' ?>
+                </button>
+            </form>
+            <form method="POST" action="/salles/<?= $salle->id ?>/delete" style="display: inline;" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer définitivement cette salle ?');">
+                <button type="submit" class="btn btn-danger">🗑️ Supprimer</button>
+            </form>
+        <?php endif; ?>
         <?php if ($salle->active): ?>
             <a href="/reservations/create?salle_id=<?= $salle->id ?>" class="btn btn-primary">📅 Réserver cette salle</a>
         <?php endif; ?>
@@ -37,7 +49,7 @@
             <div class="label">État</div>
             <div class="value">
                 <?php if ($salle->active): ?>
-                    <span class="badge badge-success">Active (Disponible aux réservations)</span>
+                    <span class="badge badge-success">Active (Disponible)</span>
                 <?php else: ?>
                     <span class="badge badge-danger">Inactive (Indisponible)</span>
                 <?php endif; ?>
@@ -52,7 +64,7 @@
         <a href="/reservations?salle_id=<?= $salle->id ?>" class="btn btn-secondary btn-sm">Filtrer les réservations</a>
     </div>
 
-    <?php if ($reservations->isEmpty()): ?>
+    <?php if (!$hasReservations): ?>
         <p style="color: var(--text-muted);">Aucune réservation pour cette salle.</p>
     <?php else: ?>
         <div class="table-responsive">
@@ -74,8 +86,12 @@
                             <td>#<?= htmlspecialchars((string) $res->id) ?></td>
                             <td><?= htmlspecialchars($res->responsable) ?></td>
                             <td><?= htmlspecialchars($res->motif) ?></td>
-                            <td><?= htmlspecialchars($res->date_debut->format('d/m/Y H:i')) ?></td>
-                            <td><?= htmlspecialchars($res->date_fin->format('d/m/Y H:i')) ?></td>
+                            <td>
+                                <?= $res->date_debut instanceof \DateTimeInterface ? htmlspecialchars($res->date_debut->format('d/m/Y H:i')) : htmlspecialchars((string)$res->date_debut) ?>
+                            </td>
+                            <td>
+                                <?= $res->date_fin instanceof \DateTimeInterface ? htmlspecialchars($res->date_fin->format('d/m/Y H:i')) : htmlspecialchars((string)$res->date_fin) ?>
+                            </td>
                             <td>
                                 <?php if ($res->statut === 'confirmée'): ?>
                                     <span class="badge badge-success">confirmée</span>

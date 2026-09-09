@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Application;
 use App\Controller\AuthController;
+use App\Controller\DashboardController;
 use App\Controller\ReservationController;
 use App\Controller\SalleController;
 use App\DTO\CreerReservationDTOBuilder;
@@ -17,7 +18,9 @@ use App\Repository\UtilisateurRepositoryInterface;
 use App\Service\AnnulerReservationService;
 use App\Service\AuthService;
 use App\Service\CreerReservationService;
+use App\Service\DashboardService;
 use App\Service\InterfaceAuthService;
+use App\Service\InterfaceDashboardService;
 use App\Service\InterfaceReservationService;
 use App\Service\InterfaceSalleService;
 use App\Service\ReservationService;
@@ -54,12 +57,14 @@ return [
     InterfaceSalleService::class => autowire(SalleService::class),
     InterfaceReservationService::class => autowire(ReservationService::class),
     InterfaceAuthService::class => autowire(AuthService::class),
+    InterfaceDashboardService::class => autowire(DashboardService::class),
 
     ViewRenderer::class => autowire(ViewRenderer::class),
 
     SalleController::class => autowire(SalleController::class),
     ReservationController::class => autowire(ReservationController::class),
     AuthController::class => autowire(AuthController::class),
+    DashboardController::class => autowire(DashboardController::class),
 
     CreerReservationDTOBuilder::class => autowire(CreerReservationDTOBuilder::class),
     CreerSalleDTOBuilder::class => autowire(CreerSalleDTOBuilder::class),

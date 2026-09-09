@@ -26,7 +26,8 @@ class AuthController
         if ($this->authService->estConnecte()) {
             $_SESSION['flash_success'] = "Vous êtes déjà connecté.";
             header('Location: /salles');
-            exit;
+            if (!defined('PHPUNIT_RUNNING')) { exit; }
+            return;
         }
 
         $this->view->render('auth/login', [
@@ -68,7 +69,7 @@ class AuthController
         $_SESSION['flash_success'] = "Bienvenue, {$utilisateur->nom} ! Vous êtes connecté.";
 
         header('Location: /salles');
-        exit;
+        if (!defined('PHPUNIT_RUNNING')) { exit; }
     }
 
     public function logout(): void
@@ -77,14 +78,15 @@ class AuthController
         $_SESSION['flash_success'] = "Vous avez été déconnecté avec succès.";
 
         header('Location: /login');
-        exit;
+        if (!defined('PHPUNIT_RUNNING')) { exit; }
     }
 
     public function showRegisterForm(): void
     {
         if ($this->authService->estConnecte()) {
             header('Location: /salles');
-            exit;
+            if (!defined('PHPUNIT_RUNNING')) { exit; }
+            return;
         }
 
         $this->view->render('auth/register', [
@@ -133,6 +135,6 @@ class AuthController
         $_SESSION['flash_success'] = "Votre compte a été créé avec succès ! Bienvenue, {$utilisateur->nom}.";
 
         header('Location: /salles');
-        exit;
+        if (!defined('PHPUNIT_RUNNING')) { exit; }
     }
 }

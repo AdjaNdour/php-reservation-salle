@@ -19,7 +19,7 @@ $valActive = isset($data['active']) ? (bool) $data['active'] : ($salle->active ?
         <div class="form-group">
             <label for="nom">Nom de la salle *</label>
             <input type="text" id="nom" name="nom" value="<?= htmlspecialchars((string) $valNom) ?>" 
-            class="<?= isset($errors['nom']) ? 'input-error' : '' ?>"placeholder="Ex : Amphithéâtre A, Salle B12...">
+            class="<?= isset($errors['nom']) ? 'input-error' : '' ?>" placeholder="Ex : Amphithéâtre A, Salle B12...">
             <?php if (isset($errors['nom'])): ?>
                 <span class="field-error"><?= htmlspecialchars($errors['nom']) ?></span>
             <?php endif; ?>
@@ -28,7 +28,7 @@ $valActive = isset($data['active']) ? (bool) $data['active'] : ($salle->active ?
         <div class="form-group">
             <label for="batiment">Bâtiment *</label>
             <input type="text" id="batiment" name="batiment" value="<?= htmlspecialchars((string) $valBatiment) ?>" 
-            class="<?= isset($errors['batiment']) ? 'input-error' : '' ?>" placeholder="Ex : Bâtiment Sciences, Bâtiment B..."  >
+            class="<?= isset($errors['batiment']) ? 'input-error' : '' ?>" placeholder="Ex : Bâtiment Sciences, Bâtiment B...">
             <?php if (isset($errors['batiment'])): ?>
                 <span class="field-error"><?= htmlspecialchars($errors['batiment']) ?></span>
             <?php endif; ?>
@@ -45,7 +45,7 @@ $valActive = isset($data['active']) ? (bool) $data['active'] : ($salle->active ?
 
         <div class="form-group">
             <label for="type">Type d'usage de la salle *</label>
-            <select id="type" name="type" class="<?= isset($errors['type']) ? 'input-error' : '' ?>" >
+            <select id="type" name="type" class="<?= isset($errors['type']) ? 'input-error' : '' ?>">
                 <?php foreach (\App\Model\Salle::TYPES_AUTORISES as $typeOption): ?>
                     <option value="<?= $typeOption ?>" <?= $valType === $typeOption ? 'selected' : '' ?>>
                         <?= ucfirst($typeOption) ?>

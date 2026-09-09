@@ -6,6 +6,7 @@ namespace App\Service;
 
 use App\DTO\CreerSalleDTO;
 use App\Model\Salle;
+use App\Pagination\Paginator;
 use App\Repository\SalleRepositoryInterface;
 use InvalidArgumentException;
 
@@ -18,6 +19,16 @@ final class SalleService implements InterfaceSalleService
     public function getAll(): array
     {
         return $this->repoSalles->findAll();
+    }
+
+    public function search(array $criteria = []): array
+    {
+        return $this->repoSalles->findByCriteria($criteria);
+    }
+
+    public function getPaginated(int $page = 1, int $perPage = 6, array $criteria = []): Paginator
+    {
+        return $this->repoSalles->paginate($page, $perPage, $criteria);
     }
 
     public function getById(int $id): ?Salle

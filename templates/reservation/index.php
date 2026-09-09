@@ -1,29 +1,57 @@
 <div class="page-header">
-    <h1>📅 Gestion des réservations</h1>
+    <div>
+        <h1>📅 Gestion des réservations</h1>
+        <p style="color: var(--text-muted); font-size: 0.95rem; margin-top: 4px;">
+            Consultez les réservations, filtrez selon plusieurs critères et gérez les annulations
+        </p>
+    </div>
     <a href="/reservations/create" class="btn btn-primary">+ Nouvelle réservation</a>
 </div>
 
-<!-- Barre de filtrage par salle -->
-<div class="filter-bar">
-    <form method="GET" action="/reservations" style="display: flex; gap: 12px; align-items: center; width: 100%;">
-        <label for="salle_id" style="margin-bottom: 0; white-space: nowrap;">Filtrer par salle :</label>
-        <select id="salle_id" name="salle_id" onchange="this.form.submit()">
-            <option value="">-- Toutes les salles --</option>
-            <?php foreach ($salles as $salle): ?>
-                <option value="<?= $salle->id ?>" <?= ($selectedSalleId !== null && (int)$selectedSalleId === $salle->id) ? 'selected' : '' ?>>
-                    <?= htmlspecialchars($salle->nom) ?> (<?= htmlspecialchars($salle->batiment) ?>)
-                </option>
-            <?php endforeach; ?>
-        </select>
-        <?php if ($selectedSalleId): ?>
-            <a href="/reservations" class="btn btn-secondary btn-sm">Réinitialiser le filtre</a>
-        <?php endif; ?>
+<!-- Barre de recherche multicritère -->
+<div class="card" style="padding: 16px 20px; margin-bottom: 24px;">
+    <form method="GET" action="/reservations">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; align-items: flex-end;">
+            <div>
+                <label style="font-size: 0.825rem; margin-bottom: 4px;">Salle</label>
+                <select name="salle_id">
+                    <option value="">Toutes les salles</option>
+                    <?php foreach ($salles as $salle): ?>
+                        <option value="<?= $salle->id ?>" <?= ($selectedSalleId !== null && (int)$selectedSalleId === (int)$salle->id) ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($salle->nom) ?> (<?= htmlspecialchars($salle->batiment) ?>)
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <div>
+                <label style="font-size: 0.825rem; margin-bottom: 4px;">Statut</label>
+                <select name="statut">
+                    <option value="">Tous les statuts</option>
+                    <option value="confirmée" <?= ($filters['statut'] ?? '') === 'confirmée' ? 'selected' : '' ?>>Confirmée</option>
+                    <option value="annulée" <?= ($filters['statut'] ?? '') === 'annulée' ? 'selected' : '' ?>>Annulée</option>
+                </select>
+            </div>
+            <div>
+                <label style="font-size: 0.825rem; margin-bottom: 4px;">Responsable</label>
+                <input type="text" name="responsable" placeholder="Nom du responsable..." value="<?= htmlspecialchars($filters['responsable'] ?? '') ?>">
+            </div>
+            <div>
+                <label style="font-size: 0.825rem; margin-bottom: 4px;">À partir du</label>
+                <input type="datetime-local" name="date_debut" value="<?= htmlspecialchars($filters['date_debut'] ?? '') ?>">
+            </div>
+            <div style="display: flex; gap: 8px;">
+                <button type="submit" class="btn btn-primary" style="flex: 1;">🔍 Filtrer</button>
+                <a href="/reservations" class="btn btn-secondary" title="Réinitialiser">↺</a>
+            </div>
+        </div>
     </form>
 </div>
 
 <div class="card">
     <?php if (empty($reservations)): ?>
-        <p style="color: var(--text-muted);">Aucune réservation trouvée pour ce critère.</p>
+        <p style="text-align: center; color: var(--text-muted); padding: 30px;">
+            Aucune réservation ne correspond à vos critères de recherche.
+        </p>
     <?php else: ?>
         <div class="table-responsive">
             <table>
@@ -77,5 +105,29 @@
                 </tbody>
             </table>
         </div>
+
+        <!-- Pagination -->
+        <?php if (isset($paginator) && $paginator->getTotalPages() > 1): ?>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border-color); flex-wrap: wrap; gap: 12px;">
+                <div style="color: var(--text-muted); font-size: 0.875rem;">
+                    Affichage de <strong><?= $paginator->getFromIndex() ?></strong> à <strong><?= $paginator->getToIndex() ?></strong> sur <strong><?= $paginator->getTotalItems() ?></strong> réservations
+                </div>
+                <div style="display: flex; gap: 6px; align-items: center;">
+                    <?php if ($paginator->hasPreviousPage()): ?>
+                        <a href="<?= $paginator->urlForPage($paginator->getPreviousPage()) ?>" class="btn btn-secondary btn-sm">&laquo; Précédent</a>
+                    <?php endif; ?>
+
+                    <?php for ($p = 1; $p <= $paginator->getTotalPages(); $p++): ?>
+                        <a href="<?= $paginator->urlForPage($p) ?>" class="btn btn-sm <?= $p === $paginator->getCurrentPage() ? 'btn-primary' : 'btn-secondary' ?>">
+                            <?= $p ?>
+                        </a>
+                    <?php endfor; ?>
+
+                    <?php if ($paginator->hasNextPage()): ?>
+                        <a href="<?= $paginator->urlForPage($paginator->getNextPage()) ?>" class="btn btn-secondary btn-sm">Suivant &raquo;</a>
+                    <?php endif; ?>
+                </div>
+            </div>
+        <?php endif; ?>
     <?php endif; ?>
 </div>

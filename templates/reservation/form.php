@@ -9,7 +9,7 @@ $salles = $salles ?? [];
 ?>
 
 <div class="page-header">
-    <h1> Réserver une salle universitaire</h1>
+    <h1>📅 Réserver une salle universitaire</h1>
     <a href="/reservations" class="btn btn-secondary">← Retour à la liste</a>
 </div>
 
@@ -41,7 +41,7 @@ $salles = $salles ?? [];
         <div class="form-group">
             <label for="responsable">Nom du responsable / Enseignant *</label>
             <input type="text" id="responsable" name="responsable" value="<?= htmlspecialchars($valResponsable) ?>" 
-            class="<?= isset($errors['responsable']) ? 'input-error' : '' ?>"placeholder="Ex : Dr. Awa Ndiaye" >
+            class="<?= isset($errors['responsable']) ? 'input-error' : '' ?>" placeholder="Ex : Dr. Awa Ndiaye">
             <?php if (isset($errors['responsable'])): ?>
                 <span class="field-error"><?= htmlspecialchars($errors['responsable']) ?></span>
             <?php endif; ?>
@@ -51,7 +51,7 @@ $salles = $salles ?? [];
         <div class="form-group">
             <label for="email">Adresse électronique institutionnelle *</label>
             <input type="email" id="email" name="email" value="<?= htmlspecialchars($valEmail) ?>" 
-            class="<?= isset($errors['email']) ? 'input-error' : '' ?>"placeholder="Ex : awa.ndiaye@universite.sn">
+            class="<?= isset($errors['email']) ? 'input-error' : '' ?>" placeholder="Ex : awa.ndiaye@universite.sn">
             <?php if (isset($errors['email'])): ?>
                 <span class="field-error"><?= htmlspecialchars($errors['email']) ?></span>
             <?php endif; ?>
@@ -60,8 +60,7 @@ $salles = $salles ?? [];
         <!-- Motif -->
         <div class="form-group">
             <label for="motif">Motif de la réservation (cours, soutenance, réunion...) *</label>
-            <textarea id="motif" name="motif" rows="3" class="<?= isset($errors['motif']) ? 'input-error' : '' ?>"placeholder="Ex : Cours magistral d'architecture logicielle...">
-            <?= htmlspecialchars($valMotif) ?></textarea>
+            <textarea id="motif" name="motif" rows="3" class="<?= isset($errors['motif']) ? 'input-error' : '' ?>" placeholder="Ex : Cours magistral d'architecture logicielle..."><?= htmlspecialchars($valMotif) ?></textarea>
             <?php if (isset($errors['motif'])): ?>
                 <span class="field-error"><?= htmlspecialchars($errors['motif']) ?></span>
             <?php endif; ?>

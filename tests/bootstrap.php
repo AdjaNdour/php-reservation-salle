@@ -2,6 +2,10 @@
 
 declare(strict_types=1);
 
+if (!defined('PHPUNIT_RUNNING')) {
+    define('PHPUNIT_RUNNING', true);
+}
+
 require dirname(__DIR__) . '/vendor/autoload.php';
 
 use Illuminate\Database\Capsule\Manager as Capsule;

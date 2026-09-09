@@ -1,6 +1,7 @@
 <?php
 $valNom = (string) ($data['nom'] ?? '');
 $valEmail = (string) ($data['email'] ?? '');
+$valRole = (string) ($data['role'] ?? 'responsable');
 ?>
 
 <div class="auth-wrapper" style="max-width: 480px; margin: 40px auto;">
@@ -47,6 +48,15 @@ $valEmail = (string) ($data['email'] ?? '');
                 <?php if (isset($errors['email'])): ?>
                     <span class="field-error"><?= htmlspecialchars($errors['email']) ?></span>
                 <?php endif; ?>
+            </div>
+
+            <!-- Rôle -->
+            <div class="form-group">
+                <label for="role">Profil / Rôle</label>
+                <select id="role" name="role">
+                    <option value="responsable" <?= $valRole === 'responsable' ? 'selected' : '' ?>>Responsable de salle / Événement</option>
+                    <option value="enseignant" <?= $valRole === 'enseignant' ? 'selected' : '' ?>>Enseignant / Chercheur</option>
+                </select>
             </div>
 
             <!-- Mot de passe -->

@@ -41,11 +41,13 @@ class Application
                 }
                 $_SESSION['flash_error'] = "Veuillez vous connecter pour accéder à l'application.";
                 header('Location: /login');
-                exit;
+                if (!defined('PHPUNIT_RUNNING')) { exit; }
+                return;
             }
         } elseif ($uri === '/') {
             header('Location: /salles');
-            exit;
+            if (!defined('PHPUNIT_RUNNING')) { exit; }
+            return;
         }
 
         $routeInfo = $this->dispatcher->dispatch($httpMethod, $uri);

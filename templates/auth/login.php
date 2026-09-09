@@ -32,7 +32,6 @@ $valEmail = (string) ($data['email'] ?? '');
                     value="<?= htmlspecialchars($valEmail) ?>" 
                     placeholder="ex : adja@univ.sn" 
                     class="<?= isset($errors['email']) ? 'input-error' : '' ?>"
-                     
                     autofocus
                 >
                 <?php if (isset($errors['email'])): ?>
@@ -49,7 +48,6 @@ $valEmail = (string) ($data['email'] ?? '');
                     name="password" 
                     placeholder="••••••••" 
                     class="<?= isset($errors['password']) ? 'input-error' : '' ?>"
-
                 >
                 <?php if (isset($errors['password'])): ?>
                     <span class="field-error"><?= htmlspecialchars($errors['password']) ?></span>
@@ -76,8 +74,9 @@ $valEmail = (string) ($data['email'] ?? '');
     <div style="margin-top: 16px; padding: 14px; background: #f8fafc; border: 1px dashed var(--border-color); border-radius: var(--radius-md); font-size: 0.85rem; color: var(--text-muted);">
         <strong>💡 Comptes de démonstration :</strong>
         <div style="margin-top: 6px;">
-            • <code>adja@univ.sn</code> / <code>passer123</code><br>
-            • <code>admin@univ.sn</code> / <code>admin123</code>
+            • <code>adja@univ.sn</code> / <code>passer123</code> (Enseignant)<br>
+            • <code>mariama@univ.sn</code> / <code>passer123</code> (Responsable)<br>
+            • <code>admin@univ.sn</code> / <code>admin123</code> (Admin)
         </div>
     </div>
 </div>

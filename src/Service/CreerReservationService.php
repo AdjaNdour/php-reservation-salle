@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\DTO\CreerReservationDTO;
+use App\Exception\ReservationIntrouvableException;
 use App\Exception\SalleIndisponibleException;
 use App\Model\Reservation;
+use App\Model\Salle;
 use App\Repository\ReservationRepositoryInterface;
 use App\Repository\SalleRepositoryInterface;
-use App\Exception\ReservationIntrouvableException;
-use App\Model\Salle;
 
 final class CreerReservationService
 {
@@ -28,13 +28,13 @@ final class CreerReservationService
         $this->verifierConflit($dto);
 
         $reservation = new Reservation([
-            'salle_id' => $dto->salleId,
+            'salle_id'    => $dto->salleId,
             'responsable' => $dto->responsable,
-            'email' => $dto->email,
-            'motif' => $dto->motif,
-            'date_debut' => $dto->dateDebut->format('Y-m-d H:i:s'),
-            'date_fin' => $dto->dateFin->format('Y-m-d H:i:s'),
-            'statut' => Reservation::STATUT_CONFIRMEE,
+            'email'       => $dto->email,
+            'motif'       => $dto->motif,
+            'date_debut'  => $dto->dateDebut->format('Y-m-d H:i:s'),
+            'date_fin'    => $dto->dateFin->format('Y-m-d H:i:s'),
+            'statut'      => Reservation::STATUT_CONFIRMEE,
         ]);
 
         $reservationSauvegardee = $this->repoReservations->save($reservation);
@@ -44,7 +44,6 @@ final class CreerReservationService
 
         return $reservationSauvegardee;
     }
-
 
     private function verifierDuree(CreerReservationDTO $dto): void
     {

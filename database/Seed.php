@@ -1,7 +1,9 @@
 <?php
 
 namespace Database;
+
 use App\Model\Salle;
+use App\Model\Utilisateur;
 
 class Seed
 {
@@ -64,24 +66,33 @@ class Seed
                 'nom'      => 'Adja Ndour',
                 'email'    => 'adja@univ.sn',
                 'password' => password_hash('passer123', PASSWORD_BCRYPT),
+                'role'     => Utilisateur::ROLE_ENSEIGNANT,
+            ],
+            [
+                'nom'      => 'Dr. Mariama Diop',
+                'email'    => 'mariama@univ.sn',
+                'password' => password_hash('passer123', PASSWORD_BCRYPT),
+                'role'     => Utilisateur::ROLE_RESPONSABLE,
             ],
             [
                 'nom'      => 'Administrateur',
                 'email'    => 'admin@univ.sn',
                 'password' => password_hash('admin123', PASSWORD_BCRYPT),
+                'role'     => Utilisateur::ROLE_ADMIN,
             ],
         ];
 
         foreach ($utilisateursInitiaux as $userData) {
-            $user = \App\Model\Utilisateur::updateOrCreate(
+            $user = Utilisateur::updateOrCreate(
                 ['email' => $userData['email']],
                 $userData
             );
 
             echo sprintf(
-                " Utilisateur '%s' (%s) ID: %d initialisé.\n",
+                " Utilisateur '%s' (%s) [Rôle: %s] ID: %d initialisé.\n",
                 $user->nom,
                 $user->email,
+                $user->role,
                 $user->id
             );
         }

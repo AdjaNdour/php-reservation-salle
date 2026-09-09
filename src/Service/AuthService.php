@@ -42,6 +42,7 @@ final class AuthService implements InterfaceAuthService
             'id'    => $utilisateur->id,
             'nom'   => $utilisateur->nom,
             'email' => $utilisateur->email,
+            'role'  => $utilisateur->role ?? Utilisateur::ROLE_RESPONSABLE,
         ];
     }
 
@@ -73,6 +74,34 @@ final class AuthService implements InterfaceAuthService
         return $this->utilisateurRepository->findById($id);
     }
 
+    public function estAdmin(): bool
+    {
+        $this->ensureSessionActive();
+
+        if (!empty($_SESSION['user']['role'])) {
+            return $_SESSION['user']['role'] === Utilisateur::ROLE_ADMIN;
+        }
+
+        $user = $this->getUtilisateurConnecte();
+        return $user?->estAdmin() ?? false;
+    }
+
+    public function estResponsable(): bool
+    {
+        $this->ensureSessionActive();
+
+        if (!empty($_SESSION['user']['role'])) {
+            return in_array($_SESSION['user']['role'], [
+                Utilisateur::ROLE_RESPONSABLE,
+                Utilisateur::ROLE_ADMIN,
+                Utilisateur::ROLE_ENSEIGNANT,
+            ], true);
+        }
+
+        $user = $this->getUtilisateurConnecte();
+        return $user?->estResponsable() ?? false;
+    }
+
     public function inscrire(InscriptionDTO $dto): Utilisateur
     {
         $existant = $this->utilisateurRepository->findByEmail($dto->email);
@@ -84,6 +113,7 @@ final class AuthService implements InterfaceAuthService
             'nom'      => $dto->nom,
             'email'    => $dto->email,
             'password' => password_hash($dto->password, PASSWORD_BCRYPT),
+            'role'     => $dto->role,
         ]);
 
         return $this->utilisateurRepository->save($utilisateur);
