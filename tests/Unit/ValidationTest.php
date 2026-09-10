@@ -98,4 +98,64 @@ class ValidationTest extends TestCase
         $this->assertStringContainsString('date valide', $result->errors()['date_debut']);
         $this->assertStringContainsString('date valide', $result->errors()['date_fin']);
     }
+
+    public function testResponsableEspacesSeulementInvalide(): void
+    {
+        $result = $this->reservationValidator->validate([
+            'salle_id'    => 1,
+            'responsable' => '   ',
+            'email'       => 'valide@universite.sn',
+            'motif'       => 'Séance de cours magistral',
+            'date_debut'  => '2026-09-10 10:00:00',
+            'date_fin'    => '2026-09-10 12:00:00',
+        ]);
+
+        $this->assertFalse($result->isValid());
+        $this->assertArrayHasKey('responsable', $result->errors());
+    }
+
+    public function testCapaciteZeroInvalide(): void
+    {
+        $result = $this->salleValidator->validate([
+            'nom'      => 'Salle Test',
+            'batiment' => 'Bâtiment B',
+            'capacite' => 0,
+            'type'     => 'cours',
+            'active'   => true,
+        ]);
+
+        $this->assertFalse($result->isValid());
+        $this->assertArrayHasKey('capacite', $result->errors());
+    }
+
+    public function testDonneesSalleValides(): void
+    {
+        $result = $this->salleValidator->validate([
+            'nom'      => 'Amphithéâtre 1',
+            'batiment' => 'Bâtiment A',
+            'capacite' => 250,
+            'type'     => 'amphitheatre',
+            'active'   => true,
+        ]);
+
+        $this->assertTrue($result->isValid());
+        $this->assertEmpty($result->errors());
+        $this->assertSame(250, $result->validatedData()['capacite']);
+    }
+
+    public function testDonneesReservationValides(): void
+    {
+        $result = $this->reservationValidator->validate([
+            'salle_id'    => 2,
+            'responsable' => 'Awa Ndiaye',
+            'email'       => 'awa.ndiaye@universite.sn',
+            'motif'       => 'Cours magistral d\'algorithmique',
+            'date_debut'  => '2026-10-15 08:00:00',
+            'date_fin'    => '2026-10-15 10:00:00',
+        ]);
+
+        $this->assertTrue($result->isValid());
+        $this->assertEmpty($result->errors());
+        $this->assertSame('Awa Ndiaye', $result->validatedData()['responsable']);
+    }
 }

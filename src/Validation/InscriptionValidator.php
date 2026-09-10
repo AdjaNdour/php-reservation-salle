@@ -4,45 +4,52 @@ declare(strict_types=1);
 
 namespace App\Validation;
 
-use Respect\Validation\Validator;
+use Respect\Validation\Exceptions\NestedValidationException;
+use Respect\Validation\Validator as v;
 
-class InscriptionValidator implements ValidatorInterface
+final class InscriptionValidator implements ValidatorInterface
 {
     public function validate(array $data): ValidationResult
     {
-        $errors = [];
-        $validatedData = [];
-
-        // Validation nom
-        $nom = trim((string) ($data['nom'] ?? ''));
-        if (!Validator::stringType()->length(2, 100)->validate($nom)) {
-            $errors['nom'] = "Le nom complet est obligatoire (entre 2 et 100 caractères).";
-        } else {
-            $validatedData['nom'] = $nom;
-        }
-
-        // Validation email
-        $email = trim((string) ($data['email'] ?? ''));
-        if (!Validator::email()->validate($email)) {
-            $errors['email'] = "L'adresse email institutionnelle est invalide.";
-        } else {
-            $validatedData['email'] = strtolower($email);
-        }
-
-        // Validation mot de passe
         $password = (string) ($data['password'] ?? '');
-        if (!Validator::stringType()->length(6, 128)->validate($password)) {
-            $errors['password'] = "Le mot de passe doit comporter au moins 6 caractères.";
-        } else {
-            $validatedData['password'] = $password;
+
+        $rules = [
+            'nom'                   => v::stringType()->notBlank()->length(2, 100),
+            'email'                 => v::email(),
+            'password'              => v::stringType()->length(6, 128),
+            'password_confirmation' => v::equals($password),
+        ];
+
+        $messages = [
+            'nom'                   => "Le nom complet est obligatoire (entre 2 et 100 caractères).",
+            'email'                 => "L'adresse email institutionnelle est invalide.",
+            'password'              => "Le mot de passe doit comporter au moins 6 caractères.",
+            'password_confirmation' => "Les deux mots de passe ne correspondent pas.",
+        ];
+
+        $errors = [];
+
+        foreach ($rules as $champ => $validator) {
+            try {
+                $valeur = is_string($data[$champ] ?? null) ? trim((string) $data[$champ]) : ($data[$champ] ?? null);
+                $validator->assert($valeur);
+            } catch (NestedValidationException $exception) {
+                $errors[$champ] = $messages[$champ]
+                    ?? current($exception->getMessages())
+                    ?: "Le champ {$champ} est invalide.";
+            }
         }
 
-        // Confirmation du mot de passe
-        $passwordConfirmation = (string) ($data['password_confirmation'] ?? '');
-        if ($password !== $passwordConfirmation) {
-            $errors['password_confirmation'] = "Les deux mots de passe ne correspondent pas.";
+        if ($errors !== []) {
+            return new ValidationResult(valid: false, errors: $errors);
         }
 
-        return new ValidationResult(empty($errors), $errors, $validatedData);
+        $validatedData = [
+            'nom'      => trim((string) ($data['nom'] ?? '')),
+            'email'    => strtolower(trim((string) ($data['email'] ?? ''))),
+            'password' => $password,
+        ];
+
+        return new ValidationResult(valid: true, data: $validatedData);
     }
 }

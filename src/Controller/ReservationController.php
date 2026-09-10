@@ -31,7 +31,7 @@ class ReservationController
     public function index(): void
     {
         $page = isset($_GET['page']) && is_numeric($_GET['page']) ? (int) $_GET['page'] : 1;
-        $perPage = 8;
+        $perPage = 5;
 
         $criteria = [
             'salle_id'    => $_GET['salle_id'] ?? '',
@@ -80,7 +80,6 @@ class ReservationController
         $salles = $this->salleService->getAll();
         $salleId = $_GET['salle_id'] ?? '';
 
-        // Pré-remplissage avec les informations du responsable connecté
         $user = $this->authService?->getUtilisateurConnecte();
         $nom = $user?->nom ?? ($_SESSION['user']['nom'] ?? '');
         $email = $user?->email ?? ($_SESSION['user']['email'] ?? '');

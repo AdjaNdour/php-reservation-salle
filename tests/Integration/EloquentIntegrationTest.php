@@ -21,8 +21,12 @@ class EloquentIntegrationTest extends TestCase
 
     public static function setUpBeforeClass(): void
     {
-        // Initialiser la connexion Eloquent
-        require_once dirname(__DIR__, 2) . '/config/database.php';
+        try {
+            // Initialiser la connexion Eloquent
+            require_once dirname(__DIR__, 2) . '/config/database.php';
+        } catch (\Throwable $e) {
+            self::markTestSkipped("Base de données non accessible pour les tests d'intégration : " . $e->getMessage());
+        }
     }
 
     protected function setUp(): void

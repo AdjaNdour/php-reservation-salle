@@ -10,6 +10,7 @@ use App\Model\Utilisateur;
 
 interface InterfaceAuthService
 {
+    public function getByEmail(LoginDTO $dto): ?Utilisateur;
     public function tentativeConnexion(LoginDTO $dto): ?Utilisateur;
 
     public function connecter(Utilisateur $utilisateur): void;

@@ -1,58 +1,60 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Validation;
 
 use App\Model\Salle;
-use Respect\Validation\Validator ;
+use Respect\Validation\Exceptions\NestedValidationException;
+use Respect\Validation\Validator as v;
 
-class SalleValidator implements ValidatorInterface
+final class SalleValidator implements ValidatorInterface
 {
+    private const TYPES_AUTORISES = Salle::TYPES_AUTORISES;
+
     public function validate(array $data): ValidationResult
     {
+        $rules = [
+            'nom'      => v::stringType()->notBlank()->length(2, 100),
+            'batiment' => v::stringType()->notBlank()->length(2, 100),
+            'capacite' => v::intVal()->between(1, 1000),
+            'type'     => v::in(self::TYPES_AUTORISES),
+            'active'   => v::boolVal(),
+        ];
+
+        $messages = [
+            'nom'      => "Le nom de la salle est obligatoire et doit contenir entre 2 et 100 caractères.",
+            'batiment' => "Le bâtiment est obligatoire et doit contenir entre 2 et 100 caractères.",
+            'capacite' => "La capacité doit être un entier compris entre 1 et 1 000 places.",
+            'type'     => "Le type de salle est invalide. Types acceptés : " . implode(', ', self::TYPES_AUTORISES) . ".",
+            'active'   => "La valeur d'activation doit être un booléen.",
+        ];
+
         $errors = [];
-        $validatedData = [];
 
-        // Validation du nom
-        $nom = trim((string) ($data['nom'] ?? ''));
-        if (!Validator::stringType()->length(2, 100)->validate($nom)) {
-            $errors['nom'] = "Le nom de la salle est obligatoire et doit contenir entre 2 et 100 caractères.";
-        } else {
-            $validatedData['nom'] = $nom;
+        foreach ($rules as $champ => $validator) {
+            try {
+                $valeur = is_string($data[$champ] ?? null) ? trim((string) $data[$champ]) : ($data[$champ] ?? null);
+                $validator->assert($valeur);
+            } catch (NestedValidationException $exception) {
+                $errors[$champ] = $messages[$champ]
+                    ?? current($exception->getMessages())
+                    ?: "Le champ {$champ} est invalide.";
+            }
         }
 
-        // Validation du bâtiment
-        $batiment = trim((string) ($data['batiment'] ?? ''));
-        if (!Validator::stringType()->length(2, 100)->validate($batiment)) {
-            $errors['batiment'] = "Le bâtiment est obligatoire et doit contenir entre 2 et 100 caractères.";
-        } else {
-            $validatedData['batiment'] = $batiment;
+        if ($errors !== []) {
+            return new ValidationResult(valid: false, errors: $errors);
         }
 
-        // Validation de la capacité
-        $capacite = $data['capacite'] ?? null;
-        if (!Validator::intVal()->between(1, 1000)->validate($capacite)) {
-            $errors['capacite'] = "La capacité doit être un entier compris entre 1 et 1 000 places.";
-        } else {
-            $validatedData['capacite'] = (int) $capacite;
-        }
+        $validatedData = [
+            'nom'      => trim((string) ($data['nom'] ?? '')),
+            'batiment' => trim((string) ($data['batiment'] ?? '')),
+            'capacite' => (int) ($data['capacite'] ?? 0),
+            'type'     => trim((string) ($data['type'] ?? '')),
+            'active'   => filter_var($data['active'] ?? false, FILTER_VALIDATE_BOOLEAN),
+        ];
 
-        // Validation du type
-        $type = trim((string) ($data['type'] ?? ''));
-        if (!Validator::in(Salle::TYPES_AUTORISES)->validate($type)) {
-            $errors['type'] = "Le type de salle est invalide. Types acceptés : " . implode(', ', Salle::TYPES_AUTORISES) . ".";
-        } else {
-            $validatedData['type'] = $type;
-        }
-
-        // Validation du statut active
-        $activeRaw = $data['active'] ?? false;
-        $active = filter_var($activeRaw, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
-        if ($active === null) {
-            $errors['active'] = "La valeur d'activation doit être un booléen.";
-        } else {
-            $validatedData['active'] = $active;
-        }
-
-        return new ValidationResult(empty($errors), $errors, $validatedData);
+        return new ValidationResult(valid: true, data: $validatedData);
     }
 }

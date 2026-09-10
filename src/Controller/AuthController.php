@@ -53,7 +53,7 @@ class AuthController
         }
 
         $dto = LoginDTO::fromArray($validationResult->validatedData());
-        $utilisateur = $this->authService->tentativeConnexion($dto);
+        $utilisateur = $this->authService->getByEmail($dto);
 
         if ($utilisateur === null) {
             http_response_code(401);

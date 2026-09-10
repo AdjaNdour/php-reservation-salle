@@ -18,7 +18,7 @@ interface SalleRepositoryInterface
     /**
      * @return Paginator<Salle>
      */
-    public function paginate(int $page = 1, int $perPage = 10, array $criteria = []): Paginator;
+    public function paginate(int $page = 1, int $perPage = 5, array $criteria = []): Paginator;
 
     public function save(Salle $salle): Salle;
 

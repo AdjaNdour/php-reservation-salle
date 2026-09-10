@@ -21,8 +21,6 @@ class AuthServiceTest extends TestCase
     {
         $this->repo = new InMemoryUtilisateurRepository();
         $this->authService = new AuthService($this->repo);
-
-        // Réinitialiser la session pour les tests
         $_SESSION = [];
     }
 

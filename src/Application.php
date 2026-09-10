@@ -23,14 +23,12 @@ class Application
         $httpMethod = $httpMethod ?? ($_SERVER['REQUEST_METHOD'] ?? 'GET');
         $uri = $uri ?? ($_SERVER['REQUEST_URI'] ?? '/');
 
-        // Nettoyage de la query string (ex: /reservations?salle_id=2 -> /reservations)
         if (false !== ($pos = strpos($uri, '?'))) {
             $uri = substr($uri, 0, $pos);
         }
         $uri = rawurldecode($uri);
 
-        // Contrôle d'accès : seule la page d'authentification est accessible hors connexion
-        /** @var InterfaceAuthService $authService */
+    
         $authService = $this->container->get(InterfaceAuthService::class);
         $publicRoutes = ['/login', '/register'];
 

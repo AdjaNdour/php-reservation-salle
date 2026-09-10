@@ -5,11 +5,20 @@ namespace App\Validation;
 class ValidationResult
 {
 
+    private readonly bool $isValid;
+    private readonly array $errors;
+    private readonly array $validatedData;
+
     public function __construct(
-        private readonly bool $isValid,
-        private readonly array $errors = [],
-        private readonly array $validatedData = []
+        bool $isValid = true,
+        array $errors = [],
+        array $validatedData = [],
+        ?bool $valid = null,
+        ?array $data = null
     ) {
+        $this->isValid = $valid ?? $isValid;
+        $this->errors = $errors;
+        $this->validatedData = $data ?? $validatedData;
     }
 
     public function isValid(): bool

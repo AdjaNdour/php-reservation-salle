@@ -6,21 +6,15 @@ namespace App\Pagination;
 
 use JsonSerializable;
 
-/**
- * @template T
- */
 final class Paginator implements JsonSerializable
 {
     private int $totalPages;
 
-    /**
-     * @param array<T> $items
-     */
     public function __construct(
         private array $items,
         private int $totalItems,
         private int $currentPage = 1,
-        private int $perPage = 10
+        private int $perPage = 5
     ) {
         $this->currentPage = max(1, $this->currentPage);
         $this->perPage = max(1, $this->perPage);
@@ -30,9 +24,7 @@ final class Paginator implements JsonSerializable
         }
     }
 
-    /**
-     * @return array<T>
-     */
+
     public function getItems(): array
     {
         return $this->items;
@@ -91,9 +83,7 @@ final class Paginator implements JsonSerializable
         return min($this->totalItems, $this->currentPage * $this->perPage);
     }
 
-    /**
-     * Génère l'URL avec conservation des filtres GET existants
-     */
+
     public function urlForPage(int $page, array $extraParams = []): string
     {
         $params = array_merge($_GET ?? [], $extraParams, ['page' => $page]);

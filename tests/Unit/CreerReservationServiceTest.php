@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Unit;
 
-use App\DTO\CreerReservationDTO;
 use App\DTO\CreerReservationDTOBuilder;
 use App\Exception\ReservationIntrouvableException;
 use App\Exception\SalleIndisponibleException;
@@ -169,6 +168,27 @@ class CreerReservationServiceTest extends TestCase
         $this->service->executer($dto);
     }
 
+    public function testDateFinEgaleAuDebutEchoue(): void
+    {
+        $this->expectException(ReservationIntrouvableException::class);
+        $this->expectExceptionMessage("La date de début doit obligatoirement précéder la date de fin.");
+
+        $demain = new \DateTimeImmutable('+1 day');
+        $debut = $demain->setTime(14, 0);
+        $fin = $demain->setTime(14, 0); // Égale
+
+        $dto = $this->builder
+            ->setSalleId($this->salleActive->id)
+            ->setResponsable('Awa Ndiaye')
+            ->setEmail('awa@universite.sn')
+            ->setMotif('Séance instantanée')
+            ->setDateDebut($debut)
+            ->setDateFin($fin)
+            ->build();
+
+        $this->service->executer($dto);
+    }
+
     
     // 5. Test d'une durée supérieure à quatre heures.
     
@@ -191,6 +211,27 @@ class CreerReservationServiceTest extends TestCase
             ->build();
 
         $this->service->executer($dto);
+    }
+
+    public function testDureeExacteDeQuatreHeuresEstAcceptee(): void
+    {
+        $demain = new \DateTimeImmutable('+1 day');
+        $debut = $demain->setTime(8, 0);
+        $fin = $demain->setTime(12, 0); // Exactement 4 heures
+
+        $dto = $this->builder
+            ->setSalleId($this->salleActive->id)
+            ->setResponsable('Awa Ndiaye')
+            ->setEmail('awa@universite.sn')
+            ->setMotif('Session intensive de 4 heures')
+            ->setDateDebut($debut)
+            ->setDateFin($fin)
+            ->build();
+
+        $reservation = $this->service->executer($dto);
+
+        $this->assertNotNull($reservation->id);
+        $this->assertSame(Reservation::STATUT_CONFIRMEE, $reservation->statut);
     }
 
     
@@ -252,6 +293,68 @@ class CreerReservationServiceTest extends TestCase
         $this->service->executer($dtoConflit);
     }
 
+    public function testConflitChevauchementDebutEchoue(): void
+    {
+        $demain = new \DateTimeImmutable('+1 day');
+
+        $existante = new Reservation([
+            'salle_id'    => $this->salleActive->id,
+            'responsable' => 'Moussa Diop',
+            'email'       => 'moussa@universite.sn',
+            'motif'       => 'Conférence introductive',
+            'date_debut'  => $demain->setTime(10, 0),
+            'date_fin'    => $demain->setTime(12, 0),
+            'statut'      => Reservation::STATUT_CONFIRMEE,
+        ]);
+        $this->reservationRepository->save($existante);
+
+        // Nouvelle demande qui commence avant et se termine pendant l'existante : 09h30 -> 11h00
+        $this->expectException(SalleIndisponibleException::class);
+        $this->expectExceptionMessage("La salle est indisponible pendant cette période.");
+
+        $dtoConflit = $this->builder
+            ->setSalleId($this->salleActive->id)
+            ->setResponsable('Babacar Ndiaye')
+            ->setEmail('babacar@universite.sn')
+            ->setMotif('TP Base de données')
+            ->setDateDebut($demain->setTime(9, 30))
+            ->setDateFin($demain->setTime(11, 0))
+            ->build();
+
+        $this->service->executer($dtoConflit);
+    }
+
+    public function testConflitEnglobantEchoue(): void
+    {
+        $demain = new \DateTimeImmutable('+1 day');
+
+        $existante = new Reservation([
+            'salle_id'    => $this->salleActive->id,
+            'responsable' => 'Moussa Diop',
+            'email'       => 'moussa@universite.sn',
+            'motif'       => 'Conférence introductive',
+            'date_debut'  => $demain->setTime(10, 0),
+            'date_fin'    => $demain->setTime(11, 0),
+            'statut'      => Reservation::STATUT_CONFIRMEE,
+        ]);
+        $this->reservationRepository->save($existante);
+
+        // Nouvelle demande qui englobe entièrement l'existante : 09h30 -> 12h30
+        $this->expectException(SalleIndisponibleException::class);
+        $this->expectExceptionMessage("La salle est indisponible pendant cette période.");
+
+        $dtoConflit = $this->builder
+            ->setSalleId($this->salleActive->id)
+            ->setResponsable('Sokhna Seck')
+            ->setEmail('sokhna@universite.sn')
+            ->setMotif('Grand Séminaire')
+            ->setDateDebut($demain->setTime(9, 30))
+            ->setDateFin($demain->setTime(12, 30))
+            ->build();
+
+        $this->service->executer($dtoConflit);
+    }
+
     
     // 8. Test de réservations voisines sans chevauchement (10h-12h puis 12h-14h).
     
@@ -282,6 +385,38 @@ class CreerReservationServiceTest extends TestCase
             ->build();
 
         $res2 = $this->service->executer($dtoVoisine);
+
+        $this->assertNotNull($res2->id);
+        $this->assertSame(Reservation::STATUT_CONFIRMEE, $res2->statut);
+    }
+
+    public function testReservationVoisinePrecedenteSansChevauchementEstAcceptee(): void
+    {
+        $demain = new \DateTimeImmutable('+1 day');
+
+        // Réservation existante : 10h00 -> 12h00
+        $res1 = new Reservation([
+            'salle_id'    => $this->salleActive->id,
+            'responsable' => 'Moussa Diop',
+            'email'       => 'moussa@universite.sn',
+            'motif'       => 'Cours Réseaux',
+            'date_debut'  => $demain->setTime(10, 0),
+            'date_fin'    => $demain->setTime(12, 0),
+            'statut'      => Reservation::STATUT_CONFIRMEE,
+        ]);
+        $this->reservationRepository->save($res1);
+
+        // Réservation voisine précédente : 08h00 -> 10h00 (doit réussir sans conflit)
+        $dtoPrecedente = $this->builder
+            ->setSalleId($this->salleActive->id)
+            ->setResponsable('Cheikh Fall')
+            ->setEmail('cheikh@universite.sn')
+            ->setMotif('Cours Mathématiques')
+            ->setDateDebut($demain->setTime(8, 0))
+            ->setDateFin($demain->setTime(10, 0))
+            ->build();
+
+        $res2 = $this->service->executer($dtoPrecedente);
 
         $this->assertNotNull($res2->id);
         $this->assertSame(Reservation::STATUT_CONFIRMEE, $res2->statut);

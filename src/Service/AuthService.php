@@ -16,7 +16,7 @@ final class AuthService implements InterfaceAuthService
         private UtilisateurRepositoryInterface $utilisateurRepository
     ) {}
 
-    public function tentativeConnexion(LoginDTO $dto): ?Utilisateur
+    public function getByEmail(LoginDTO $dto): ?Utilisateur
     {
         $utilisateur = $this->utilisateurRepository->findByEmail($dto->email);
         if ($utilisateur === null) {
@@ -28,6 +28,11 @@ final class AuthService implements InterfaceAuthService
         }
 
         return $utilisateur;
+    }
+
+    public function tentativeConnexion(LoginDTO $dto): ?Utilisateur
+    {
+        return $this->getByEmail($dto);
     }
 
     public function connecter(Utilisateur $utilisateur): void

@@ -28,9 +28,9 @@ class SalleController
     public function index(): void
     {
         $page = isset($_GET['page']) && is_numeric($_GET['page']) ? (int) $_GET['page'] : 1;
-        $perPage = 6;
+        $perPage = 5;
 
-        $criteria = [
+        $criteres = [
             'q'            => $_GET['q'] ?? '',
             'nom'          => $_GET['nom'] ?? '',
             'batiment'     => $_GET['batiment'] ?? '',
@@ -39,15 +39,15 @@ class SalleController
             'active'       => $_GET['active'] ?? '',
         ];
 
-        $activeCriteria = array_filter($criteria, fn ($v) => $v !== '' && $v !== null);
+        $activeCriteres = array_filter($criteres, fn ($v) => $v !== '' && $v !== null);
 
-        $paginator = $this->salleService->getPaginated($page, $perPage, $activeCriteria);
+        $paginator = $this->salleService->getPaginated($page, $perPage, $activeCriteres);
 
         $this->view->render('salle/index', [
             'titre'     => 'Liste des salles',
             'salles'    => $paginator->getItems(),
             'paginator' => $paginator,
-            'filters'   => $criteria,
+            'filters'   => $criteres,
         ]);
     }
 
@@ -173,7 +173,6 @@ class SalleController
         $salle = $this->salleService->getById($id);
 
         if ($salle === null) {
-            http_response_code(404);
             $this->view->render('error/404', [
                 'titre'   => 'Salle introuvable',
                 'message' => "La salle demandée (ID: {$id}) n'existe pas.",
@@ -184,7 +183,6 @@ class SalleController
         $validationResult = $this->validator->validate($_POST);
 
         if (!$validationResult->isValid()) {
-            http_response_code(422);
             $this->view->render('salle/form', [
                 'titre'  => 'Modifier la salle - ' . $salle->nom,
                 'salle'  => $salle,
@@ -218,7 +216,6 @@ class SalleController
 
         $salle = $this->salleService->getById($id);
         if ($salle === null) {
-            http_response_code(404);
             $this->view->render('error/404', [
                 'titre'   => 'Salle introuvable',
                 'message' => "La salle demandée n'existe pas.",

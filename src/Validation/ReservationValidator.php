@@ -1,57 +1,60 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Validation;
 
-use Respect\Validation\Validator ;
+use Respect\Validation\Exceptions\NestedValidationException;
+use Respect\Validation\Validator as v;
 
-class ReservationValidator implements ValidatorInterface
+final class ReservationValidator implements ValidatorInterface
 {
     public function validate(array $data): ValidationResult
     {
-        $errors = []; $validatedData = [];
+        $rules = [
+            'salle_id'    => v::intVal()->positive(),
+            'responsable' => v::stringType()->notBlank()->length(2, 120),
+            'email'       => v::email(),
+            'motif'       => v::stringType()->notBlank()->length(5, 255),
+            'date_debut'  => v::notBlank()->dateTime(),
+            'date_fin'    => v::notBlank()->dateTime(),
+        ];
 
-        $salleId = $data['salle_id'] ?? null;
-        if (!Validator::intVal()->positive()->validate($salleId)) {
-            $errors['salle_id'] = "La salle sélectionnée est invalide.";
-        } else {
-            $validatedData['salle_id'] = (int) $salleId;
+        $messages = [
+            'salle_id'    => "La salle sélectionnée est invalide.",
+            'responsable' => "Le nom du responsable est obligatoire et doit contenir entre 2 et 120 caractères.",
+            'email'       => "L'adresse électronique saisie est invalide.",
+            'motif'       => "Le motif doit contenir entre 5 et 255 caractères.",
+            'date_debut'  => "La date et l'heure de début doivent être une date valide.",
+            'date_fin'    => "La date et l'heure de fin doivent être une date valide.",
+        ];
+
+        $errors = [];
+
+        foreach ($rules as $champ => $validator) {
+            try {
+                $valeur = is_string($data[$champ] ?? null) ? trim((string) $data[$champ]) : ($data[$champ] ?? null);
+                $validator->assert($valeur);
+            } catch (NestedValidationException $exception) {
+                $errors[$champ] = $messages[$champ]
+                    ?? current($exception->getMessages())
+                    ?: "Le champ {$champ} est invalide.";
+            }
         }
 
-        $responsable = trim((string) ($data['responsable'] ?? ''));
-        if (!Validator::stringType()->length(2, 120)->validate($responsable)) {
-            $errors['responsable'] = "Le nom du responsable est obligatoire et doit contenir entre 2 et 120 caractères.";
-        } else {
-            $validatedData['responsable'] = $responsable;
+        if ($errors !== []) {
+            return new ValidationResult(valid: false, errors: $errors);
         }
 
-        $email = trim((string) ($data['email'] ?? ''));
-        if (!Validator::email()->validate($email)) {
-            $errors['email'] = "L'adresse électronique saisie est invalide.";
-        } else {
-            $validatedData['email'] = $email;
-        }
+        $validatedData = [
+            'salle_id'    => (int) ($data['salle_id'] ?? 0),
+            'responsable' => trim((string) ($data['responsable'] ?? '')),
+            'email'       => trim((string) ($data['email'] ?? '')),
+            'motif'       => trim((string) ($data['motif'] ?? '')),
+            'date_debut'  => trim((string) ($data['date_debut'] ?? '')),
+            'date_fin'    => trim((string) ($data['date_fin'] ?? '')),
+        ];
 
-        $motif = trim((string) ($data['motif'] ?? ''));
-        if (!Validator::stringType()->length(5, 255)->validate($motif)) {
-            $errors['motif'] = "Le motif doit contenir entre 5 et 255 caractères.";
-        } else {
-            $validatedData['motif'] = $motif;
-        }
-
-        $dateDebutRaw = trim((string) ($data['date_debut'] ?? ''));
-        if ($dateDebutRaw === '' || !Validator::dateTime()->validate($dateDebutRaw)) {
-            $errors['date_debut'] = "La date et l'heure de début doivent être une date valide.";
-        } else {
-            $validatedData['date_debut'] = $dateDebutRaw;
-        }
-
-        $dateFinRaw = trim((string) ($data['date_fin'] ?? ''));
-        if ($dateFinRaw === '' || !Validator::dateTime()->validate($dateFinRaw)) {
-            $errors['date_fin'] = "La date et l'heure de fin doivent être une date valide.";
-        } else {
-            $validatedData['date_fin'] = $dateFinRaw;
-        }
-
-        return new ValidationResult(empty($errors), $errors, $validatedData);
+        return new ValidationResult(valid: true, data: $validatedData);
     }
 }
