@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace App\Controller\Middleware;
 
-use App\Controller\Middleware\Interface\MiddlewareInterface;
+use App\Controller\Middleware\Interface\IMiddleware;
 use App\Service\Interface\IAuthService;
-use App\Service\Interface\InterfaceAuthService;
 use App\Session\SessionManager;
 
-class AuthMiddleware implements MiddlewareInterface
+class AuthMiddleware implements IMiddleware
 {
     public function __construct(
         private IAuthService $authService,

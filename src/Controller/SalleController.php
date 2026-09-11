@@ -6,7 +6,6 @@ namespace App\Controller;
 
 use App\Controller\Middleware\AdminMiddleware;
 use App\DTO\CreerSalleDTOBuilder;
-use App\Service\Interface\IAuthService;
 use App\Service\Interface\IReservationService;
 use App\Service\Interface\ISalleService;
 use App\Validation\Interface\ISalleValidator;
@@ -19,9 +18,8 @@ class SalleController extends Controller
         private ISalleService $salleService,
         private ISalleValidator $validator,
         ViewRenderer $view,
-        private ?IAuthService $authService = null,
-        private ?IReservationService $reservationService = null,
-        private ?AdminMiddleware $adminMiddleware = null
+        private IReservationService $reservationService ,
+        private AdminMiddleware $adminMiddleware
     ) {
         parent::__construct($view);
     }
@@ -85,7 +83,7 @@ class SalleController extends Controller
 
     public function create(): void
     {
-        if (!$this->checkAdmin()) {
+        if (!$this->middleware($this->adminMiddleware)) {
             return;
         }
 
@@ -101,7 +99,7 @@ class SalleController extends Controller
 
     public function store(): void
     {
-        if (!$this->checkAdmin()) {
+        if (!$this->middleware($this->adminMiddleware)) {
             return;
         }
 
@@ -132,10 +130,6 @@ class SalleController extends Controller
 
     public function edit(int $id): void
     {
-        if (!$this->checkAdmin()) {
-            return;
-        }
-
         $salle = $this->salleService->getById($id);
 
         if ($salle === null) {
@@ -162,10 +156,6 @@ class SalleController extends Controller
 
     public function update(int $id): void
     {
-        if (!$this->checkAdmin()) {
-            return;
-        }
-
         $salle = $this->salleService->getById($id);
 
         if ($salle === null) {
@@ -189,7 +179,7 @@ class SalleController extends Controller
         }
 
         $data = $validationResult->validatedData();
-           CreerSalleDTOBuilder::fromArray($data);
+        CreerSalleDTOBuilder::fromArray($data);
         $dto = CreerSalleDTOBuilder::build($this->validator);
 
         $salleModifiee = $this->salleService->save($dto, $id);
@@ -203,10 +193,6 @@ class SalleController extends Controller
 
     public function toggle(int $id): void
     {
-        if (!$this->checkAdmin()) {
-            return;
-        }
-
         $salle = $this->salleService->getById($id);
         if ($salle === null) {
             $this->render('error/404', [
@@ -229,10 +215,6 @@ class SalleController extends Controller
 
     public function delete(int $id): void
     {
-        if (!$this->checkAdmin()) {
-            return;
-        }
-
         $salle = $this->salleService->getById($id);
         if ($salle === null) {
             $this->render('error/404', [
@@ -250,22 +232,5 @@ class SalleController extends Controller
         if (!defined('PHPUNIT_RUNNING')) {
             exit;
         }
-    }
-
-    private function checkAdmin(): bool
-    {
-        if ($this->adminMiddleware !== null) {
-            return $this->middleware($this->adminMiddleware);
-        }
-
-        if ($this->authService !== null && !$this->authService->estAdmin()) {
-            $this->render('error/403', [
-                'titre'   => '403 - Accès refusé',
-                'message' => "Cette action est strictement réservée aux administrateurs.",
-            ], 403);
-            return false;
-        }
-
-        return true;
     }
 }

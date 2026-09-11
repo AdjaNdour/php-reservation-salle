@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Controller\Middleware;
 
-use App\Controller\Middleware\Interface\MiddlewareInterface;
+use App\Controller\Middleware\Interface\IMiddleware;
 use App\Service\Interface\IAuthService;
 use App\View\ViewRenderer;
 
-class AdminMiddleware implements MiddlewareInterface
+class AdminMiddleware implements IMiddleware
 {
     public function __construct(
         private IAuthService $authService,

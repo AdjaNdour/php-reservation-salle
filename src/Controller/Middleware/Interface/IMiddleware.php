@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Middleware\Interface;
 
-interface MiddlewareInterface
+interface IMiddleware
 {
     public function handle(): bool;
 }

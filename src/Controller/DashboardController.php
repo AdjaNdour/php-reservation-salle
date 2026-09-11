@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Service\Interface\IDashboardService;
-use App\Service\Interface\InterfaceDashboardService;
 use App\View\ViewRenderer;
 
 class DashboardController extends Controller

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\Controller\Middleware\Interface\MiddlewareInterface;
+use App\Controller\Middleware\Interface\IMiddleware;
 use App\View\ViewRenderer;
 
 abstract class Controller
@@ -14,7 +14,7 @@ abstract class Controller
     ) {
     }
 
-    protected function middleware(MiddlewareInterface $middleware): bool
+    protected function middleware(IMiddleware $middleware): bool
     {
         return $middleware->handle();
     }

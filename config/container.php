@@ -3,15 +3,14 @@
 declare(strict_types=1);
 
 use App\Application;
+use App\Controller\Middleware\AdminMiddleware;
+use App\Controller\Middleware\AuthMiddleware;
 use App\Repository\EloquentReservationRepository;
 use App\Repository\EloquentSalleRepository;
 use App\Repository\EloquentUtilisateurRepository;
 use App\Repository\Interface\IReservationRepository;
 use App\Repository\Interface\ISalleRepository;
 use App\Repository\Interface\IUtilisateurRepository;
-use App\Repository\Interface\ReservationRepositoryInterface;
-use App\Repository\Interface\SalleRepositoryInterface;
-use App\Repository\Interface\UtilisateurRepositoryInterface;
 use App\Service\AnnulerReservationService;
 use App\Service\AuthService;
 use App\Service\CreerReservationService;
@@ -24,6 +23,8 @@ use App\Service\Interface\IReservationService;
 use App\Service\Interface\ISalleService;
 use App\Service\ReservationService;
 use App\Service\SalleService;
+use App\Session\Interface\ISessionManager;
+use App\Session\SessionManager;
 use App\Validation\InscriptionValidator;
 use App\Validation\Interface\IInscriptionValidator;
 use App\Validation\Interface\ILoginValidator;
@@ -89,7 +90,7 @@ return [
     IReservationService::class => autowire(ReservationService::class),
     IAuthService::class => autowire(AuthService::class),
     IDashboardService::class => autowire(DashboardService::class),
-   
+
     HtmlFormat::class => factory(static function (): HtmlFormat {
         return new HtmlFormat(dirname(__DIR__) . '/templates');
     }),
@@ -108,9 +109,9 @@ return [
         return \FastRoute\simpleDispatcher($routesCallable);
     }),
 
-    \App\Session\SessionManager::class => autowire(\App\Session\SessionManager::class),
-    \App\Controller\Middleware\AuthMiddleware::class => autowire(\App\Controller\Middleware\AuthMiddleware::class),
-    \App\Controller\Middleware\AdminMiddleware::class => autowire(\App\Controller\Middleware\AdminMiddleware::class),
+    ISessionManager::class => autowire(SessionManager::class),
+    AuthMiddleware::class => autowire(),
+    AdminMiddleware::class => autowire(),
 
     Application::class => autowire(Application::class),
 ];

@@ -24,7 +24,7 @@ class ReservationController extends Controller
         private ICreerReservationService $creerService,
         private IAnnulerReservationService $annulerService,
         ViewRenderer $view,
-        private ?IAuthService $authService = null
+        private IAuthService $authService
     ) {
         parent::__construct($view);
     }
