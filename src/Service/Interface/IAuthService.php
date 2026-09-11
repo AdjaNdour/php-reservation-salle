@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace App\Service;
+namespace App\Service\Interface;
 
 use App\DTO\InscriptionDTO;
 use App\DTO\LoginDTO;
 use App\Model\Utilisateur;
 
-interface InterfaceAuthService
+interface IAuthService
 {
     public function getByEmail(LoginDTO $dto): ?Utilisateur;
     public function tentativeConnexion(LoginDTO $dto): ?Utilisateur;

@@ -6,12 +6,13 @@ namespace App\Service;
 
 use App\Exception\ReservationIntrouvableException;
 use App\Model\Reservation;
-use App\Repository\ReservationRepositoryInterface;
+use App\Repository\Interface\IReservationRepository;
+use App\Service\Interface\IAnnulerReservationService;
 
-final class AnnulerReservationService
+final class AnnulerReservationService implements IAnnulerReservationService
 {
     public function __construct(
-        private ReservationRepositoryInterface $reservations
+        private IReservationRepository $reservations
     ) {
     }
 

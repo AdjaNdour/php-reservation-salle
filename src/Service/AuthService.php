@@ -7,13 +7,14 @@ namespace App\Service;
 use App\DTO\InscriptionDTO;
 use App\DTO\LoginDTO;
 use App\Model\Utilisateur;
-use App\Repository\UtilisateurRepositoryInterface;
+use App\Repository\Interface\IUtilisateurRepository;
+use App\Service\Interface\IAuthService;
 use InvalidArgumentException;
 
-final class AuthService implements InterfaceAuthService
+final class AuthService implements IAuthService
 {
     public function __construct(
-        private UtilisateurRepositoryInterface $utilisateurRepository
+        private IUtilisateurRepository $utilisateurRepository
     ) {}
 
     public function getByEmail(LoginDTO $dto): ?Utilisateur

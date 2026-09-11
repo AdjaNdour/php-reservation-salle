@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace App\Validation;
 
+use App\Validation\Interface\ILoginValidator;
 use Respect\Validation\Exceptions\NestedValidationException;
 use Respect\Validation\Validator as v;
 
-final class LoginValidator implements ValidatorInterface
+final class LoginValidator implements ILoginValidator
 {
     public function validate(array $data): ValidationResult
     {

@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace App\Validation;
 
+use App\Validation\Interface\IInscriptionValidator;
 use Respect\Validation\Exceptions\NestedValidationException;
 use Respect\Validation\Validator as v;
 
-final class InscriptionValidator implements ValidatorInterface
+final class InscriptionValidator implements IInscriptionValidator
 {
     public function validate(array $data): ValidationResult
     {

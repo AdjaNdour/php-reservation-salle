@@ -9,14 +9,15 @@ use App\Exception\ReservationIntrouvableException;
 use App\Exception\SalleIndisponibleException;
 use App\Model\Reservation;
 use App\Model\Salle;
-use App\Repository\ReservationRepositoryInterface;
-use App\Repository\SalleRepositoryInterface;
+use App\Repository\Interface\IReservationRepository;
+use App\Repository\Interface\ISalleRepository;
+use App\Service\Interface\ICreerReservationService;
 
-final class CreerReservationService
+final class CreerReservationService implements ICreerReservationService
 {
     public function __construct(
-        private SalleRepositoryInterface $repoSalles,
-        private ReservationRepositoryInterface $repoReservations
+        private ISalleRepository $repoSalles,
+        private IReservationRepository $repoReservations
     ) {}
 
     public function executer(CreerReservationDTO $dto): Reservation

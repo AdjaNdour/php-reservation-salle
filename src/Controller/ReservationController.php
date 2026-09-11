@@ -7,26 +7,27 @@ namespace App\Controller;
 use App\DTO\CreerReservationDTOBuilder;
 use App\Exception\ReservationIntrouvableException;
 use App\Exception\SalleIndisponibleException;
-use App\Service\AnnulerReservationService;
-use App\Service\CreerReservationService;
-use App\Service\InterfaceAuthService;
-use App\Service\InterfaceReservationService;
-use App\Service\InterfaceSalleService;
-use App\Validation\ReservationValidator;
+use App\Service\Interface\IAnnulerReservationService;
+use App\Service\Interface\IAuthService;
+use App\Service\Interface\ICreerReservationService;
+use App\Service\Interface\IReservationService;
+use App\Service\Interface\ISalleService;
+use App\Validation\Interface\IReservationValidator;
 use App\View\ViewRenderer;
 
-class ReservationController
+class ReservationController extends Controller
 {
     public function __construct(
-        private InterfaceReservationService $reservationsService,
-        private InterfaceSalleService $salleService,
-        private ReservationValidator $validator,
-        private CreerReservationService $creerService,
-        private AnnulerReservationService $annulerService,
-        private ViewRenderer $view,
-        private CreerReservationDTOBuilder $builderReservation,
-        private ?InterfaceAuthService $authService = null
-    ) {}
+        private IReservationService $reservationsService,
+        private ISalleService $salleService,
+        private IReservationValidator $validator,
+        private ICreerReservationService $creerService,
+        private IAnnulerReservationService $annulerService,
+        ViewRenderer $view,
+        private ?IAuthService $authService = null
+    ) {
+        parent::__construct($view);
+    }
 
     public function index(): void
     {
@@ -41,14 +42,15 @@ class ReservationController
             'date_fin'    => $_GET['date_fin'] ?? '',
         ];
 
-        $activeCriteria = array_filter($criteria, fn ($v) => $v !== '' && $v !== null);
+        $activeCriteria = array_filter($criteria, fn($v) => $v !== '' && $v !== null);
 
         $paginator = $this->reservationsService->getPaginated($page, $perPage, $activeCriteria);
+        $paginator->appends($activeCriteria);
         $salles = $this->salleService->getAll();
 
-        $this->view->render('reservation/index', [
+        $this->render('reservation/index', [
             'titre'           => 'Gestion des réservations',
-            'reservations'    => $paginator->getItems(),
+            'reservations'    => $paginator->items(),
             'paginator'       => $paginator,
             'salles'          => $salles,
             'selectedSalleId' => !empty($criteria['salle_id']) ? (int) $criteria['salle_id'] : null,
@@ -61,15 +63,14 @@ class ReservationController
         $reservation = $this->reservationsService->getById($id);
 
         if ($reservation === null) {
-            http_response_code(404);
-            $this->view->render('error/404', [
+            $this->render('error/404', [
                 'titre'   => 'Réservation introuvable',
                 'message' => "La réservation demandée (ID: {$id}) n'existe pas.",
-            ]);
+            ], 404);
             return;
         }
 
-        $this->view->render('reservation/show', [
+        $this->render('reservation/show', [
             'titre'       => 'Détail de la réservation #' . $reservation->id,
             'reservation' => $reservation,
         ]);
@@ -84,7 +85,7 @@ class ReservationController
         $nom = $user?->nom ?? ($_SESSION['user']['nom'] ?? '');
         $email = $user?->email ?? ($_SESSION['user']['email'] ?? '');
 
-        $this->view->render('reservation/form', [
+        $this->render('reservation/form', [
             'titre'  => 'Créer une réservation',
             'salles' => $salles,
             'errors' => [],
@@ -112,35 +113,28 @@ class ReservationController
         $validationResult = $this->validator->validate($data);
 
         if (!$validationResult->isValid()) {
-            http_response_code(422);
             $salles = $this->salleService->getAll();
-            $this->view->render('reservation/form', [
+            $this->render('reservation/form', [
                 'titre'  => 'Créer une réservation',
                 'salles' => $salles,
                 'errors' => $validationResult->errors(),
                 'data'   => $data,
-            ]);
+            ], 422);
             return;
         }
 
         try {
-            $validatedData = $validationResult->validatedData();
-            $dto = $this->builderReservation
-                ->setSalleId((int) $validatedData['salle_id'])
-                ->setResponsable($validatedData['responsable'])
-                ->setEmail($validatedData['email'])
-                ->setMotif($validatedData['motif'])
-                ->setDateDebut(new \DateTimeImmutable($validatedData['date_debut']))
-                ->setDateFin(new \DateTimeImmutable($validatedData['date_fin']))
-                ->build();
+            CreerReservationDTOBuilder::fromArray($data);
+            $dto = CreerReservationDTOBuilder::build($this->validator);
 
             $reservation = $this->creerService->executer($dto);
 
             $_SESSION['flash_success'] = "La réservation #{$reservation->id} a été confirmée avec succès.";
             header('Location: /reservations/' . $reservation->id);
-            if (!defined('PHPUNIT_RUNNING')) { exit; }
-        } catch (SalleIndisponibleException|ReservationIntrouvableException $e) {
-            http_response_code(422);
+            if (!defined('PHPUNIT_RUNNING')) {
+                exit;
+            }
+        } catch (SalleIndisponibleException | ReservationIntrouvableException $e) {
             $salles = $this->salleService->getAll();
             $errors = [];
             $message = $e->getMessage();
@@ -157,13 +151,13 @@ class ReservationController
                 $errors['metier'] = $message;
             }
 
-            $this->view->render('reservation/form', [
+            $this->render('reservation/form', [
                 'titre'        => 'Créer une réservation',
                 'salles'       => $salles,
                 'errors'       => $errors,
                 'data'         => $data,
                 'errorMessage' => $message,
-            ]);
+            ], 422);
         }
     }
 
@@ -173,13 +167,14 @@ class ReservationController
             $reservation = $this->annulerService->executer($id);
             $_SESSION['flash_success'] = "La réservation #{$reservation->id} a été annulée avec succès.";
             header('Location: /reservations/' . $id);
-            if (!defined('PHPUNIT_RUNNING')) { exit; }
+            if (!defined('PHPUNIT_RUNNING')) {
+                exit;
+            }
         } catch (ReservationIntrouvableException $e) {
-            http_response_code(404);
-            $this->view->render('error/404', [
+            $this->render('error/404', [
                 'titre'   => 'Réservation introuvable',
                 'message' => $e->getMessage(),
-            ]);
+            ], 404);
         }
     }
 }

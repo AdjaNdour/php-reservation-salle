@@ -6,14 +6,16 @@ namespace App\Service;
 
 use App\DTO\CreerReservationDTO;
 use App\Model\Reservation;
-use App\Pagination\Paginator;
-use App\Repository\ReservationRepositoryInterface;
+use App\Repository\Interface\IReservationRepository;
+use App\Service\Interface\ICreerReservationService;
+use App\Service\Interface\IReservationService;
+use Illuminate\Pagination\LengthAwarePaginator;
 
-final class ReservationService implements InterfaceReservationService
+final class ReservationService implements IReservationService
 {
     public function __construct(
-        private ReservationRepositoryInterface $repoResev,
-        private ?CreerReservationService $creerReservationService = null
+        private IReservationRepository $repoResev,
+        private ?ICreerReservationService $creerReservationService = null
     ) {}
 
     public function getAll(?int $salleId = null): array
@@ -26,7 +28,7 @@ final class ReservationService implements InterfaceReservationService
         return $this->repoResev->findByCriteria($criteria);
     }
 
-    public function getPaginated(int $page = 1, int $perPage = 10, array $criteria = []): Paginator
+    public function getPaginated(int $page = 1, int $perPage = 10, array $criteria = []): LengthAwarePaginator
     {
         return $this->repoResev->paginate($page, $perPage, $criteria);
     }

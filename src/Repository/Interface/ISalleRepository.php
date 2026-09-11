@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Repository;
+namespace App\Repository\Interface;
 
 use App\Model\Salle;
-use App\Pagination\Paginator;
+use Illuminate\Pagination\LengthAwarePaginator;
 
-interface SalleRepositoryInterface
+interface ISalleRepository
 {
     public function findAll(): array;
 
@@ -15,10 +15,7 @@ interface SalleRepositoryInterface
 
     public function findByCriteria(array $criteria = []): array;
 
-    /**
-     * @return Paginator<Salle>
-     */
-    public function paginate(int $page = 1, int $perPage = 5, array $criteria = []): Paginator;
+    public function paginate(int $page = 1, int $perPage = 5, array $criteria = []): LengthAwarePaginator;
 
     public function save(Salle $salle): Salle;
 

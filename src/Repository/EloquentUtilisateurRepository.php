@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace App\Repository;
 
 use App\Model\Utilisateur;
+use App\Repository\Interface\IUtilisateurRepository;
 
-class EloquentUtilisateurRepository implements UtilisateurRepositoryInterface
+class EloquentUtilisateurRepository implements IUtilisateurRepository
 {
 
     public function findAll(): array

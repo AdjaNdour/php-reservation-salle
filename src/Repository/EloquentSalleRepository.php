@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace App\Repository;
 
 use App\Model\Salle;
-use App\Pagination\Paginator;
+use App\Repository\Interface\ISalleRepository;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Pagination\LengthAwarePaginator;
 
-class EloquentSalleRepository implements SalleRepositoryInterface
+class EloquentSalleRepository implements ISalleRepository
 {
     public function findAll(): array
     {
@@ -31,22 +32,14 @@ class EloquentSalleRepository implements SalleRepositoryInterface
             ->all();
     }
 
-    public function paginate(int $page = 1, int $perPage = 5, array $criteria = []): Paginator
+    public function paginate(int $page = 1, int $perPage = 5, array $criteria = []): LengthAwarePaginator
     {
-        $query = $this->buildCriteriaQuery($criteria);
-        $totalItems = $query->count();
-
-        $page = max(1, $page);
-        $perPage = max(1, $perPage);
-        $offset = ($page - 1) * $perPage;
-
-        $items = $query->orderBy('nom', 'asc')
-            ->offset($offset)
-            ->limit($perPage)
-            ->get()
-            ->all();
-
-        return new Paginator($items, $totalItems, $page, $perPage);
+        return $this->buildCriteriaQuery($criteria)
+            ->orderBy('nom', 'asc')
+            ->paginate(
+                perPage: $perPage,
+                page: max(1, $page)
+            );
     }
 
     public function save(Salle $salle): Salle
@@ -80,33 +73,34 @@ class EloquentSalleRepository implements SalleRepositoryInterface
     {
         $query = Salle::query();
 
-        if (!empty($criteria['q'])) {
-            $search = '%' . trim((string) $criteria['q']) . '%';
-            $query->where(function (Builder $subQuery) use ($search) {
-                $subQuery->where('nom', 'like', $search)
-                    ->orWhere('batiment', 'like', $search);
-            });
-        }
+        $filters = [
+            'q' => function (Builder $query, mixed $value): void {
+                $search = '%' . trim((string) $value) . '%';
+                $query->where(function (Builder $subQuery) use ($search): void {
+                    $subQuery->where('nom', 'like', $search)->orWhere('batiment', 'like', $search);
+                });
+            },
 
-        if (!empty($criteria['nom'])) {
-            $query->where('nom', 'like', '%' . trim((string) $criteria['nom']) . '%');
-        }
+            'nom' => fn(Builder $query, mixed $value) =>
+            $query->where('nom', 'like', '%' . trim((string) $value) . '%'),
 
-        if (!empty($criteria['batiment'])) {
-            $query->where('batiment', 'like', '%' . trim((string) $criteria['batiment']) . '%');
-        }
+            'batiment' => fn(Builder $query, mixed $value) =>
+            $query->where('batiment', 'like', '%' . trim((string) $value) . '%'),
 
-        if (!empty($criteria['type'])) {
-            $query->where('type', trim((string) $criteria['type']));
-        }
+            'type' => fn(Builder $query, mixed $value) =>
+            $query->where('type', trim((string) $value)),
 
-        if (!empty($criteria['capacite_min']) && is_numeric($criteria['capacite_min'])) {
-            $query->where('capacite', '>=', (int) $criteria['capacite_min']);
-        }
+            'capacite_min' => fn(Builder $query, mixed $value) =>
+            $query->where('capacite', '>=', (int) $value),
 
-        if (isset($criteria['active']) && $criteria['active'] !== '') {
-            $isActive = in_array($criteria['active'], [true, 1, '1', 'true', 'active'], true);
-            $query->where('active', $isActive);
+            'active' => fn(Builder $query, mixed $value) =>
+            $query->where('active', in_array($value, [true, 1, '1', 'true', 'active'], true)),
+        ];
+
+        foreach ($filters as $key => $filter) {
+            if (isset($criteria[$key]) && $criteria[$key] !== '' && ($key !== 'capacite_min' || is_numeric($criteria[$key]))) {
+                $filter($query, $criteria[$key]);
+            }
         }
 
         return $query;

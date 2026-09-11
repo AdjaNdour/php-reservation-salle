@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace App\Validation;
 
 use App\Model\Salle;
+use App\Validation\Interface\ISalleValidator;
 use Respect\Validation\Exceptions\NestedValidationException;
 use Respect\Validation\Validator as v;
 
-final class SalleValidator implements ValidatorInterface
+final class SalleValidator implements ISalleValidator
 {
     private const TYPES_AUTORISES = Salle::TYPES_AUTORISES;
 

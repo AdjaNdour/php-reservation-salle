@@ -2,22 +2,19 @@
 
 declare(strict_types=1);
 
-namespace App\Service;
+namespace App\Service\Interface;
 
 use App\DTO\CreerSalleDTO;
 use App\Model\Salle;
-use App\Pagination\Paginator;
+use Illuminate\Pagination\LengthAwarePaginator;
 
-interface InterfaceSalleService
+interface ISalleService
 {
     public function getAll(): array;
 
     public function search(array $criteria = []): array;
 
-    /**
-     * @return Paginator<Salle>
-     */
-    public function getPaginated(int $page = 1, int $perPage = 6, array $criteria = []): Paginator;
+    public function getPaginated(int $page = 1, int $perPage = 6, array $criteria = []): LengthAwarePaginator;
 
     public function getById(int $id): ?Salle;
 

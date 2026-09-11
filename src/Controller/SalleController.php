@@ -4,26 +4,27 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\DTO\CreerSalleDTO;
+use App\Controller\Middleware\AdminMiddleware;
 use App\DTO\CreerSalleDTOBuilder;
-use App\Model\Salle;
-use App\Service\InterfaceAuthService;
-use App\Service\InterfaceReservationService;
-use App\Service\InterfaceSalleService;
-use App\Validation\SalleValidator;
+use App\Service\Interface\IAuthService;
+use App\Service\Interface\IReservationService;
+use App\Service\Interface\ISalleService;
+use App\Validation\Interface\ISalleValidator;
 use App\View\ViewRenderer;
 use Throwable;
 
-class SalleController
+class SalleController extends Controller
 {
     public function __construct(
-        private InterfaceSalleService $salleService,
-        private CreerSalleDTOBuilder $builderSalle,
-        private SalleValidator $validator,
-        private ViewRenderer $view,
-        private ?InterfaceAuthService $authService = null,
-        private ?InterfaceReservationService $reservationService = null
-    ) {}
+        private ISalleService $salleService,
+        private ISalleValidator $validator,
+        ViewRenderer $view,
+        private ?IAuthService $authService = null,
+        private ?IReservationService $reservationService = null,
+        private ?AdminMiddleware $adminMiddleware = null
+    ) {
+        parent::__construct($view);
+    }
 
     public function index(): void
     {
@@ -39,13 +40,14 @@ class SalleController
             'active'       => $_GET['active'] ?? '',
         ];
 
-        $activeCriteres = array_filter($criteres, fn ($v) => $v !== '' && $v !== null);
+        $activeCriteres = array_filter($criteres, fn($v) => $v !== '' && $v !== null);
 
         $paginator = $this->salleService->getPaginated($page, $perPage, $activeCriteres);
+        $paginator->appends($activeCriteres);
 
-        $this->view->render('salle/index', [
+        $this->render('salle/index', [
             'titre'     => 'Liste des salles',
-            'salles'    => $paginator->getItems(),
+            'salles'    => $paginator->items(),
             'paginator' => $paginator,
             'filters'   => $criteres,
         ]);
@@ -56,11 +58,10 @@ class SalleController
         $salle = $this->salleService->getById($id);
 
         if ($salle === null) {
-            http_response_code(404);
-            $this->view->render('error/404', [
+            $this->render('error/404', [
                 'titre'   => 'Salle introuvable',
                 'message' => "La salle demandée (ID: {$id}) n'existe pas.",
-            ]);
+            ], 404);
             return;
         }
 
@@ -75,7 +76,7 @@ class SalleController
             }
         }
 
-        $this->view->render('salle/show', [
+        $this->render('salle/show', [
             'titre'        => 'Détail de la salle - ' . $salle->nom,
             'salle'        => $salle,
             'reservations' => $reservations,
@@ -88,7 +89,7 @@ class SalleController
             return;
         }
 
-        $this->view->render('salle/form', [
+        $this->render('salle/form', [
             'titre'  => 'Ajouter une salle',
             'salle'  => null,
             'errors' => [],
@@ -107,30 +108,26 @@ class SalleController
         $validationResult = $this->validator->validate($_POST);
 
         if (!$validationResult->isValid()) {
-            http_response_code(422);
-            $this->view->render('salle/form', [
+            $this->render('salle/form', [
                 'titre'  => 'Ajouter une salle',
                 'salle'  => null,
                 'errors' => $validationResult->errors(),
                 'data'   => $_POST,
-            ]);
+            ], 422);
             return;
         }
 
         $data = $_POST;
-        $dto = $this->builderSalle
-            ->setNom($data['nom'])
-            ->setBatiment($data['batiment'])
-            ->setCapacite((int) $data['capacite'])
-            ->setType($data['type'])
-            ->setActive((bool) ($data['active'] ?? true))
-            ->build();
 
+        CreerSalleDTOBuilder::fromArray($data);
+        $dto = CreerSalleDTOBuilder::build($this->validator);
         $salle = $this->salleService->save($dto);
 
         $_SESSION['flash_success'] = "La salle « {$salle->nom} » a été créée avec succès.";
         header('Location: /salles');
-        if (!defined('PHPUNIT_RUNNING')) { exit; }
+        if (!defined('PHPUNIT_RUNNING')) {
+            exit;
+        }
     }
 
     public function edit(int $id): void
@@ -142,15 +139,14 @@ class SalleController
         $salle = $this->salleService->getById($id);
 
         if ($salle === null) {
-            http_response_code(404);
-            $this->view->render('error/404', [
+            $this->render('error/404', [
                 'titre'   => 'Salle introuvable',
                 'message' => "La salle demandée (ID: {$id}) n'existe pas.",
-            ]);
+            ], 404);
             return;
         }
 
-        $this->view->render('salle/form', [
+        $this->render('salle/form', [
             'titre'  => 'Modifier la salle - ' . $salle->nom,
             'salle'  => $salle,
             'errors' => [],
@@ -173,39 +169,36 @@ class SalleController
         $salle = $this->salleService->getById($id);
 
         if ($salle === null) {
-            $this->view->render('error/404', [
+            $this->render('error/404', [
                 'titre'   => 'Salle introuvable',
                 'message' => "La salle demandée (ID: {$id}) n'existe pas.",
-            ]);
+            ], 404);
             return;
         }
 
         $validationResult = $this->validator->validate($_POST);
 
         if (!$validationResult->isValid()) {
-            $this->view->render('salle/form', [
+            $this->render('salle/form', [
                 'titre'  => 'Modifier la salle - ' . $salle->nom,
                 'salle'  => $salle,
                 'errors' => $validationResult->errors(),
                 'data'   => $_POST,
-            ]);
+            ], 422);
             return;
         }
 
         $data = $validationResult->validatedData();
-        $dto = $this->builderSalle
-            ->setNom($data['nom'])
-            ->setBatiment($data['batiment'])
-            ->setCapacite((int) $data['capacite'])
-            ->setType($data['type'])
-            ->setActive((bool) ($data['active'] ?? true))
-            ->build();
+           CreerSalleDTOBuilder::fromArray($data);
+        $dto = CreerSalleDTOBuilder::build($this->validator);
 
         $salleModifiee = $this->salleService->save($dto, $id);
 
         $_SESSION['flash_success'] = "La salle « {$salleModifiee->nom} » a été modifiée avec succès.";
         header('Location: /salles/' . $id);
-        if (!defined('PHPUNIT_RUNNING')) { exit; }
+        if (!defined('PHPUNIT_RUNNING')) {
+            exit;
+        }
     }
 
     public function toggle(int $id): void
@@ -216,10 +209,10 @@ class SalleController
 
         $salle = $this->salleService->getById($id);
         if ($salle === null) {
-            $this->view->render('error/404', [
+            $this->render('error/404', [
                 'titre'   => 'Salle introuvable',
                 'message' => "La salle demandée n'existe pas.",
-            ]);
+            ], 404);
             return;
         }
 
@@ -229,7 +222,9 @@ class SalleController
 
         $referer = $_SERVER['HTTP_REFERER'] ?? '/salles';
         header('Location: ' . $referer);
-        if (!defined('PHPUNIT_RUNNING')) { exit; }
+        if (!defined('PHPUNIT_RUNNING')) {
+            exit;
+        }
     }
 
     public function delete(int $id): void
@@ -240,11 +235,10 @@ class SalleController
 
         $salle = $this->salleService->getById($id);
         if ($salle === null) {
-            http_response_code(404);
-            $this->view->render('error/404', [
+            $this->render('error/404', [
                 'titre'   => 'Salle introuvable',
                 'message' => "La salle demandée n'existe pas.",
-            ]);
+            ], 404);
             return;
         }
 
@@ -253,17 +247,22 @@ class SalleController
         $_SESSION['flash_success'] = "La salle « {$nom} » a été supprimée avec succès.";
 
         header('Location: /salles');
-        if (!defined('PHPUNIT_RUNNING')) { exit; }
+        if (!defined('PHPUNIT_RUNNING')) {
+            exit;
+        }
     }
 
     private function checkAdmin(): bool
     {
+        if ($this->adminMiddleware !== null) {
+            return $this->middleware($this->adminMiddleware);
+        }
+
         if ($this->authService !== null && !$this->authService->estAdmin()) {
-            http_response_code(403);
-            $this->view->render('error/403', [
+            $this->render('error/403', [
                 'titre'   => '403 - Accès refusé',
                 'message' => "Cette action est strictement réservée aux administrateurs.",
-            ]);
+            ], 403);
             return false;
         }
 

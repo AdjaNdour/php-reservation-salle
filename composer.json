@@ -11,10 +11,11 @@
     ],
     "require": {
         "php": "^8.2 || ^8.3",
-        "nikic/fast-route": "^1.3",
-        "respect/validation": "^2.4",
         "illuminate/database": "^12.0",
+        "illuminate/pagination": "^12.0",
+        "nikic/fast-route": "^1.3",
         "php-di/php-di": "^7.0",
+        "respect/validation": "^2.4",
         "vlucas/phpdotenv": "^5.7"
     },
     "require-dev": {

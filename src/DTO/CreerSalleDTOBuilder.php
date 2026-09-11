@@ -8,96 +8,89 @@ use App\Validation\SalleValidator;
 
 final class CreerSalleDTOBuilder
 {
-    private ?string $nom = null;
-    private ?string $batiment = null;
-    private ?int $capacite = null;
-    private ?string $type = null;
-    private bool $active = true;
+    private static ?string $nom = null;
+    private static ?string $batiment = null;
+    private static ?int $capacite = null;
+    private static ?string $type = null;
+    private static bool $active = true;
 
+    private function __construct(){}
 
-    public function __construct(
-        private ?SalleValidator $salleValidator = null
-    ) {}
-
-    public function setNom(string $nom): self
+    public static function setNom(string $nom): void
     {
-        $this->nom = $nom;
-        return $this;
+        self::$nom = $nom;
     }
 
-    public function setBatiment(string $batiment): self
+    public static function setBatiment(string $batiment): void
     {
-        $this->batiment = $batiment;
-        return $this;
+        self::$batiment = $batiment;
     }
 
-    public function setCapacite(int $capacite): self
+    public static function setCapacite(int $capacite): void
     {
-        $this->capacite = $capacite;
-        return $this;
+        self::$capacite = $capacite;
     }
 
-    public function setType(string $type): self
+    public static function setType(string $type): void
     {
-        $this->type = $type;
-        return $this;
+        self::$type = $type;
     }
 
-    public function setActive(bool $active): self
+    public static function setActive(bool $active): void
     {
-        $this->active = $active;
-        return $this;
+        self::$active = $active;
     }
 
-    public function fromArray(array $data): self
+    public static function fromArray(array $data): void
     {
         if (isset($data['nom'])) {
-            $this->setNom((string) $data['nom']);
+            self::setNom((string) $data['nom']);
         }
+
         if (isset($data['batiment'])) {
-            $this->setBatiment((string) $data['batiment']);
+            self::setBatiment((string) $data['batiment']);
         }
+
         if (isset($data['capacite'])) {
-            $this->setCapacite((int) $data['capacite']);
+            self::setCapacite((int) $data['capacite']);
         }
+
         if (isset($data['type'])) {
-            $this->setType((string) $data['type']);
+            self::setType((string) $data['type']);
         }
+
         if (isset($data['active'])) {
-            $this->setActive((bool) $data['active']);
+            self::setActive((bool) $data['active']);
         }
-
-        return $this;
     }
 
-    public function reset(): self
-    {
-        $this->nom = null;
-        $this->batiment = null;
-        $this->capacite = null;
-        $this->type = null;
-        $this->active = true;
-
-        return $this;
-    }
-
-    public function build(): CreerSalleDTO
-    {
+    public static function build(
+        SalleValidator $salleValidator
+    ): CreerSalleDTO {
         $data = [
-            'nom' => $this->nom,
-            'batiment' => $this->batiment,
-            'capacite' => $this->capacite,
-            'type' => $this->type,
-            'active' => $this->active,
+            'nom' => self::$nom,
+            'batiment' => self::$batiment,
+            'capacite' => self::$capacite,
+            'type' => self::$type,
+            'active' => self::$active,
         ];
 
         $dto = CreerSalleDTO::fromArray(
             $data,
-            $this->salleValidator
+            $salleValidator
         );
 
-        $this->reset();
+        self::reset();
 
         return $dto;
+    }
+
+    public static function reset(): void
+    {
+        self::$nom = null;
+        self::$batiment = null;
+        self::$capacite = null;
+        self::$type = null;
+        self::$active = true;
     }
 }

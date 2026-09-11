@@ -6,11 +6,12 @@ namespace App\Repository;
 
 use App\Model\Reservation;
 use App\Model\Salle;
-use App\Pagination\Paginator;
+use App\Repository\Interface\IReservationRepository;
 use DateTimeInterface;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 
-class EloquentReservationRepository implements ReservationRepositoryInterface
+class EloquentReservationRepository implements IReservationRepository
 {
     public function findAll(?int $salleId = null): array
     {
@@ -47,23 +48,16 @@ class EloquentReservationRepository implements ReservationRepositoryInterface
             ->all();
     }
 
-    public function paginate(int $page = 1, int $perPage = 10, array $criteria = []): Paginator
+    public function paginate(int $page = 1, int $perPage = 10, array $criteria = []): LengthAwarePaginator
     {
         $query = $this->buildCriteriaQuery($criteria);
-        $totalItems = $query->count();
 
-        $page = max(1, $page);
-        $perPage = max(1, $perPage);
-        $offset = ($page - 1) * $perPage;
-
-        $items = $query->with('salle')
+        return $query->with('salle')
             ->orderBy('date_debut', 'desc')
-            ->offset($offset)
-            ->limit($perPage)
-            ->get()
-            ->all();
-
-        return new Paginator($items, $totalItems, $page, $perPage);
+            ->paginate(
+                perPage: $perPage,
+                page: max(1, $page)
+            );
     }
 
     public function countTotal(): int
@@ -140,28 +134,30 @@ class EloquentReservationRepository implements ReservationRepositoryInterface
     {
         $query = Reservation::query();
 
-        if (!empty($criteria['salle_id']) && is_numeric($criteria['salle_id'])) {
-            $query->where('salle_id', (int) $criteria['salle_id']);
-        }
+        $filters = [
+            'salle_id' => fn(Builder $query, mixed $value) =>
+            $query->where('salle_id', (int) $value),
 
-        if (!empty($criteria['statut'])) {
-            $query->where('statut', trim((string) $criteria['statut']));
-        }
+            'statut' => fn(Builder $query, mixed $value) =>
+            $query->where('statut', trim((string) $value)),
 
-        if (!empty($criteria['responsable'])) {
-            $query->where('responsable', 'like', '%' . trim((string) $criteria['responsable']) . '%');
-        }
+            'responsable' => fn(Builder $query, mixed $value) =>
+            $query->where('responsable', 'like', '%' . trim((string) $value) . '%'),
 
-        if (!empty($criteria['email'])) {
-            $query->where('email', 'like', '%' . trim((string) $criteria['email']) . '%');
-        }
+            'email' => fn(Builder $query, mixed $value) =>
+            $query->where('email', 'like', '%' . trim((string) $value) . '%'),
 
-        if (!empty($criteria['date_debut'])) {
-            $query->where('date_debut', '>=', trim((string) $criteria['date_debut']));
-        }
+            'date_debut' => fn(Builder $query, mixed $value) =>
+            $query->where('date_debut', '>=', trim((string) $value)),
 
-        if (!empty($criteria['date_fin'])) {
-            $query->where('date_fin', '<=', trim((string) $criteria['date_fin']));
+            'date_fin' => fn(Builder $query, mixed $value) =>
+            $query->where('date_fin', '<=', trim((string) $value)),
+        ];
+
+        foreach ($filters as $key => $filter) {
+            if (!empty($criteria[$key]) && ($key !== 'salle_id' || is_numeric($criteria[$key]))) {
+                $filter($query, $criteria[$key]);
+            }
         }
 
         return $query;

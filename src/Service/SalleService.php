@@ -6,14 +6,15 @@ namespace App\Service;
 
 use App\DTO\CreerSalleDTO;
 use App\Model\Salle;
-use App\Pagination\Paginator;
-use App\Repository\SalleRepositoryInterface;
+use App\Repository\Interface\ISalleRepository;
+use App\Service\Interface\ISalleService;
+use Illuminate\Pagination\LengthAwarePaginator;
 use InvalidArgumentException;
 
-final class SalleService implements InterfaceSalleService
+final class SalleService implements ISalleService
 {
     public function __construct(
-        private SalleRepositoryInterface $repoSalles
+        private ISalleRepository $repoSalles
     ) {}
 
     public function getAll(): array
@@ -26,7 +27,7 @@ final class SalleService implements InterfaceSalleService
         return $this->repoSalles->findByCriteria($criteria);
     }
 
-    public function getPaginated(int $page = 1, int $perPage = 6, array $criteria = []): Paginator
+    public function getPaginated(int $page = 1, int $perPage = 6, array $criteria = []): LengthAwarePaginator
     {
         return $this->repoSalles->paginate($page, $perPage, $criteria);
     }

@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace App\Repository;
+namespace App\Repository\Interface;
 
 use App\Model\Reservation;
-use App\Pagination\Paginator;
 use DateTimeInterface;
+use Illuminate\Pagination\LengthAwarePaginator;
 
-interface ReservationRepositoryInterface
+interface IReservationRepository
 {
     public function findAll(?int $salleId = null): array;
 
@@ -18,15 +18,8 @@ interface ReservationRepositoryInterface
 
     public function findByCriteria(array $criteria = []): array;
 
-    /**
-     * @return Paginator<Reservation>
-     */
-    public function paginate(int $page = 1, int $perPage = 10, array $criteria = []): Paginator;
+    public function paginate(int $page = 1, int $perPage = 10, array $criteria = []): LengthAwarePaginator;
 
-    /**
-     * Retourne les statistiques des salles les plus utilisées
-     * @return array<int, array{salle_id: int, nom: string, batiment: string, capacite: int, total_reservations: int, reservations_confirmees: int, reservations_annulees: int, total_heures: float}>
-     */
     public function getMostUsedSalles(int $limit = 5): array;
 
     public function countTotal(): int;

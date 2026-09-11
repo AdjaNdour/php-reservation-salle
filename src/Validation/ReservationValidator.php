@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace App\Validation;
 
+use App\Validation\Interface\IReservationValidator;
 use Respect\Validation\Exceptions\NestedValidationException;
 use Respect\Validation\Validator as v;
 
-final class ReservationValidator implements ValidatorInterface
+final class ReservationValidator implements IReservationValidator
 {
     public function validate(array $data): ValidationResult
     {

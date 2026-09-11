@@ -2,13 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Repository;
+namespace App\Repository\Interface;
 
 use App\Model\Utilisateur;
 
-interface UtilisateurRepositoryInterface
+interface IUtilisateurRepository
 {
- 
     public function findAll(): array;
 
     public function findById(int $id): ?Utilisateur;

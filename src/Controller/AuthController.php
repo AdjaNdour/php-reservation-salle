@@ -6,20 +6,22 @@ namespace App\Controller;
 
 use App\DTO\InscriptionDTO;
 use App\DTO\LoginDTO;
-use App\Service\InterfaceAuthService;
-use App\Validation\InscriptionValidator;
-use App\Validation\LoginValidator;
+use App\Service\Interface\IAuthService;
+use App\Validation\Interface\IInscriptionValidator;
+use App\Validation\Interface\ILoginValidator;
 use App\View\ViewRenderer;
 use InvalidArgumentException;
 
-class AuthController
+class AuthController extends Controller
 {
     public function __construct(
-        private InterfaceAuthService $authService,
-        private LoginValidator $loginValidator,
-        private InscriptionValidator $inscriptionValidator,
-        private ViewRenderer $view
-    ) {}
+        private IAuthService $authService,
+        private ILoginValidator $loginValidator,
+        private IInscriptionValidator $inscriptionValidator,
+        ViewRenderer $view
+    ) {
+        parent::__construct($view);
+    }
 
     public function showLoginForm(): void
     {
@@ -30,7 +32,7 @@ class AuthController
             return;
         }
 
-        $this->view->render('auth/login', [
+        $this->render('auth/login', [
             'titre'  => 'Connexion - UnivRésa',
             'errors' => [],
             'data'   => ['email' => ''],
@@ -43,12 +45,11 @@ class AuthController
         $validationResult = $this->loginValidator->validate($data);
 
         if (!$validationResult->isValid()) {
-            http_response_code(422);
-            $this->view->render('auth/login', [
+            $this->render('auth/login', [
                 'titre'  => 'Connexion - UnivRésa',
                 'errors' => $validationResult->errors(),
                 'data'   => ['email' => $data['email'] ?? ''],
-            ]);
+            ], 422);
             return;
         }
 
@@ -56,12 +57,11 @@ class AuthController
         $utilisateur = $this->authService->getByEmail($dto);
 
         if ($utilisateur === null) {
-            http_response_code(401);
-            $this->view->render('auth/login', [
+            $this->render('auth/login', [
                 'titre'  => 'Connexion - UnivRésa',
                 'errors' => ['general' => 'Adresse email ou mot de passe incorrect.'],
                 'data'   => ['email' => $data['email'] ?? ''],
-            ]);
+            ], 401);
             return;
         }
 
@@ -89,7 +89,7 @@ class AuthController
             return;
         }
 
-        $this->view->render('auth/register', [
+        $this->render('auth/register', [
             'titre'  => 'Inscription - UnivRésa',
             'errors' => [],
             'data'   => ['nom' => '', 'email' => ''],
@@ -102,15 +102,14 @@ class AuthController
         $validationResult = $this->inscriptionValidator->validate($data);
 
         if (!$validationResult->isValid()) {
-            http_response_code(422);
-            $this->view->render('auth/register', [
+            $this->render('auth/register', [
                 'titre'  => 'Inscription - UnivRésa',
                 'errors' => $validationResult->errors(),
                 'data'   => [
                     'nom'   => $data['nom'] ?? '',
                     'email' => $data['email'] ?? '',
                 ],
-            ]);
+            ], 422);
             return;
         }
 
@@ -119,15 +118,14 @@ class AuthController
         try {
             $utilisateur = $this->authService->inscrire($dto);
         } catch (InvalidArgumentException $e) {
-            http_response_code(422);
-            $this->view->render('auth/register', [
+            $this->render('auth/register', [
                 'titre'  => 'Inscription - UnivRésa',
                 'errors' => ['email' => $e->getMessage()],
                 'data'   => [
                     'nom'   => $data['nom'] ?? '',
                     'email' => $data['email'] ?? '',
                 ],
-            ]);
+            ], 422);
             return;
         }
 

@@ -9,101 +9,96 @@ use DateTimeImmutable;
 
 final class CreerReservationDTOBuilder
 {
-    private ?int $salleId = null;
-    private ?string $responsable = null;
-    private ?string $email = null;
-    private ?string $motif = null;
-    private ?DateTimeImmutable $dateDebut = null;
-    private ?DateTimeImmutable $dateFin = null;
+    private static ?int $salleId = null;
+    private static ?string $responsable = null;
+    private static ?string $email = null;
+    private static ?string $motif = null;
+    private static ?DateTimeImmutable $dateDebut = null;
+    private static ?DateTimeImmutable $dateFin = null;
 
-    public function __construct(
-        private ?ReservationValidator $reservationValidator = null
-    ) {}
+    private function __construct() {}
 
-    public function setSalleId(int $salleId): self
+    public static function setSalleId(int $salleId): void
     {
-        $this->salleId = $salleId;
-        return $this;
+        self::$salleId = $salleId;
     }
 
-    public function setResponsable(string $responsable): self
+    public static function setResponsable(string $responsable): void
     {
-        $this->responsable = $responsable;
-        return $this;
+        self::$responsable = $responsable;
     }
 
-    public function setEmail(string $email): self
+    public static function setEmail(string $email): void
     {
-        $this->email = $email;
-        return $this;
+        self::$email = $email;
     }
 
-    public function setMotif(string $motif): self
+    public static function setMotif(string $motif): void
     {
-        $this->motif = $motif;
-        return $this;
+        self::$motif = $motif;
     }
 
-    public function setDateDebut(DateTimeImmutable|string $dateDebut): self
+    public static function setDateDebut(DateTimeImmutable|string $dateDebut): void
     {
-        $this->dateDebut = is_string($dateDebut) ? new DateTimeImmutable($dateDebut) : $dateDebut;
-        return $this;
+        self::$dateDebut = is_string($dateDebut) ? new DateTimeImmutable($dateDebut) : $dateDebut;
     }
 
-    public function setDateFin(DateTimeImmutable|string $dateFin): self
+    public static function setDateFin(DateTimeImmutable|string $dateFin): void
     {
-        $this->dateFin = is_string($dateFin) ? new DateTimeImmutable($dateFin) : $dateFin;
-        return $this;
+        self::$dateFin = is_string($dateFin) ? new DateTimeImmutable($dateFin) : $dateFin;
     }
 
-    public function fromArray(array $data): self
+    public static function fromArray(array $data): void
     {
         if (isset($data['salle_id'])) {
-            $this->setSalleId((int) $data['salle_id']);
+            self::setSalleId((int) $data['salle_id']);
         }
+
         if (isset($data['responsable'])) {
-            $this->setResponsable((string) $data['responsable']);
+            self::setResponsable((string) $data['responsable']);
         }
+
         if (isset($data['email'])) {
-            $this->setEmail((string) $data['email']);
+            self::setEmail((string) $data['email']);
         }
+
         if (isset($data['motif'])) {
-            $this->setMotif((string) $data['motif']);
+            self::setMotif((string) $data['motif']);
         }
+
         if (isset($data['date_debut'])) {
-            $this->setDateDebut($data['date_debut']);
+            self::setDateDebut($data['date_debut']);
         }
+
         if (isset($data['date_fin'])) {
-            $this->setDateFin($data['date_fin']);
+            self::setDateFin($data['date_fin']);
         }
-
-        return $this;
     }
 
-    public function reset(): self
-    {
-        $this->salleId = null;
-        $this->responsable = null;
-        $this->email = null;
-        $this->motif = null;
-        $this->dateDebut = null;
-        $this->dateFin = null;
-
-        return $this;
-    }
-
-    public function build(): CreerReservationDTO
-    {
+    public static function build(ReservationValidator $reservationValidator ): CreerReservationDTO {
         $data = [
-            'salle_id' => $this->salleId,
-            'responsable' => $this->responsable,
-            'email' => $this->email,
-            'motif' => $this->motif,
-            'date_debut' => $this->dateDebut?->format('Y-m-d H:i:s'),
-            'date_fin' => $this->dateFin?->format('Y-m-d H:i:s'),
+            'salle_id' => self::$salleId,
+            'responsable' => self::$responsable,
+            'email' => self::$email,
+            'motif' => self::$motif,
+            'date_debut' => self::$dateDebut?->format('Y-m-d H:i:s'),
+            'date_fin' => self::$dateFin?->format('Y-m-d H:i:s'),
         ];
-        $dto = CreerReservationDTO::fromArray($data, $this->reservationValidator);
-        $this->reset();
+
+        $dto = CreerReservationDTO::fromArray($data,$reservationValidator);
+
+        self::reset();
+
         return $dto;
+    }
+
+    public static function reset(): void
+    {
+        self::$salleId = null;
+        self::$responsable = null;
+        self::$email = null;
+        self::$motif = null;
+        self::$dateDebut = null;
+        self::$dateFin = null;
     }
 }

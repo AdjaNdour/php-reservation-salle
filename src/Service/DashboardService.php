@@ -5,14 +5,15 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\Model\Reservation;
-use App\Repository\ReservationRepositoryInterface;
-use App\Repository\SalleRepositoryInterface;
+use App\Repository\Interface\IReservationRepository;
+use App\Repository\Interface\ISalleRepository;
+use App\Service\Interface\IDashboardService;
 
-final class DashboardService implements InterfaceDashboardService
+final class DashboardService implements IDashboardService
 {
     public function __construct(
-        private SalleRepositoryInterface $salleRepository,
-        private ReservationRepositoryInterface $reservationRepository
+        private ISalleRepository $salleRepository,
+        private IReservationRepository $reservationRepository
     ) {}
 
     public function getMostUsedSalles(int $limit = 5): array

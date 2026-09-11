@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App;
 
-use App\Service\InterfaceAuthService;
+use App\Controller\Middleware\AuthMiddleware;
+use App\Service\Interface\InterfaceAuthService;
 use App\View\ViewRenderer;
 use FastRoute\Dispatcher;
 use Psr\Container\ContainerInterface;
@@ -29,17 +30,11 @@ class Application
         $uri = rawurldecode($uri);
 
     
-        $authService = $this->container->get(InterfaceAuthService::class);
         $publicRoutes = ['/login', '/register'];
 
-        if (!$authService->estConnecte()) {
-            if (!in_array($uri, $publicRoutes, true)) {
-                if (session_status() === PHP_SESSION_NONE && !headers_sent()) {
-                    session_start();
-                }
-                $_SESSION['flash_error'] = "Veuillez vous connecter pour accéder à l'application.";
-                header('Location: /login');
-                if (!defined('PHPUNIT_RUNNING')) { exit; }
+        if (!in_array($uri, $publicRoutes, true)) {
+            $authMiddleware = $this->container->get(AuthMiddleware::class);
+            if (!$authMiddleware->handle()) {
                 return;
             }
         } elseif ($uri === '/') {

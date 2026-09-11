@@ -3,10 +3,10 @@ services:
     image: mysql:8.0
     container_name: reservation-mysql
     environment:
-      MYSQL_ROOT_PASSWORD: "root"
-      MYSQL_DATABASE: "reservation_salles"
-      MYSQL_USER: "adja"
-      MYSQL_PASSWORD: "008088"
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
     ports:
       - "3307:3306"
     volumes:
@@ -23,8 +23,8 @@ services:
     image: phpmyadmin/phpmyadmin
     container_name: reservation-phpmyadmin
     environment:
-      PMA_HOST: mysql
-      PMA_PORT: 3306
+      PMA_HOST: ${DB_HOST}
+      PMA_PORT: ${DB_PORT}
     ports:
       - "8081:80"
     depends_on:
@@ -47,11 +47,11 @@ services:
       - ./config:/var/www/html/config
       - ./.env:/var/www/html/.env
     environment:
-      DB_HOST: "mysql"
-      DB_PORT: "3306"
-      DB_DATABASE: "reservation_salles"
-      DB_USERNAME: "adja"
-      DB_PASSWORD: "008088"
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_DATABASE: ${DB_DATABASE}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
     depends_on:
       mysql:
         condition: service_healthy

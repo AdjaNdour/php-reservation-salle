@@ -115,31 +115,31 @@
         </div>
 
         <!-- Pagination -->
-        <?php if (isset($paginator) && $paginator->getTotalItems() > 0): ?>
+        <?php if (isset($paginator) && $paginator->total() > 0): ?>
             <?php
-            $totalPages = $paginator->getTotalPages();
-            $currentPage = $paginator->getCurrentPage();
+            $totalPages = $paginator->lastPage();
+            $currentPage = $paginator->currentPage();
             $startPage = max(1, $currentPage - 2);
             $endPage = min($totalPages, $currentPage + 2);
             ?>
             <div class="pagination-wrapper" style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border-color); flex-wrap: wrap; gap: 12px;">
                 <div class="pagination-info" style="color: var(--text-muted); font-size: 0.875rem;">
-                    Affichage de <strong><?= $paginator->getFromIndex() ?></strong> à <strong><?= $paginator->getToIndex() ?></strong> sur <strong><?= $paginator->getTotalItems() ?></strong> <?= $paginator->getTotalItems() > 1 ? 'salles' : 'salle' ?>
+                    Affichage de <strong><?= $paginator->firstItem() ?></strong> à <strong><?= $paginator->lastItem() ?></strong> sur <strong><?= $paginator->total() ?></strong> <?= $paginator->total() > 1 ? 'salles' : 'salle' ?>
                     <?php if ($totalPages > 1): ?>
                         (Page <strong><?= $currentPage ?></strong> sur <strong><?= $totalPages ?></strong>)
                     <?php endif; ?>
                 </div>
                 <div class="pagination-controls" style="display: flex; gap: 6px; align-items: center;">
                     <!-- Bouton Précédent -->
-                    <?php if ($paginator->hasPreviousPage()): ?>
-                        <a href="<?= $paginator->urlForPage($paginator->getPreviousPage()) ?>" class="btn btn-secondary btn-sm">&laquo; Précédent</a>
+                    <?php if (!$paginator->onFirstPage()): ?>
+                        <a href="<?= $paginator->previousPageUrl() ?>" class="btn btn-secondary btn-sm">&laquo; Précédent</a>
                     <?php else: ?>
                         <span class="btn btn-secondary btn-sm disabled" style="opacity: 0.5; cursor: not-allowed; pointer-events: none;">&laquo; Précédent</span>
                     <?php endif; ?>
 
                     <!-- Première page si fenêtre décalée -->
                     <?php if ($startPage > 1): ?>
-                        <a href="<?= $paginator->urlForPage(1) ?>" class="btn btn-secondary btn-sm">1</a>
+                        <a href="<?= $paginator->url(1) ?>" class="btn btn-secondary btn-sm">1</a>
                         <?php if ($startPage > 2): ?>
                             <span style="padding: 0 4px; color: var(--text-muted);">&hellip;</span>
                         <?php endif; ?>
@@ -150,7 +150,7 @@
                         <?php if ($p === $currentPage): ?>
                             <span class="btn btn-primary btn-sm" style="font-weight: 700; cursor: default;"><?= $p ?></span>
                         <?php else: ?>
-                            <a href="<?= $paginator->urlForPage($p) ?>" class="btn btn-secondary btn-sm"><?= $p ?></a>
+                            <a href="<?= $paginator->url($p) ?>" class="btn btn-secondary btn-sm"><?= $p ?></a>
                         <?php endif; ?>
                     <?php endfor; ?>
 
@@ -159,12 +159,12 @@
                         <?php if ($endPage < $totalPages - 1): ?>
                             <span style="padding: 0 4px; color: var(--text-muted);">&hellip;</span>
                         <?php endif; ?>
-                        <a href="<?= $paginator->urlForPage($totalPages) ?>" class="btn btn-secondary btn-sm"><?= $totalPages ?></a>
+                        <a href="<?= $paginator->url($totalPages) ?>" class="btn btn-secondary btn-sm"><?= $totalPages ?></a>
                     <?php endif; ?>
 
                     <!-- Bouton Suivant -->
-                    <?php if ($paginator->hasNextPage()): ?>
-                        <a href="<?= $paginator->urlForPage($paginator->getNextPage()) ?>" class="btn btn-secondary btn-sm">Suivant &raquo;</a>
+                    <?php if ($paginator->hasMorePages()): ?>
+                        <a href="<?= $paginator->nextPageUrl() ?>" class="btn btn-secondary btn-sm">Suivant &raquo;</a>
                     <?php else: ?>
                         <span class="btn btn-secondary btn-sm disabled" style="opacity: 0.5; cursor: not-allowed; pointer-events: none;">Suivant &raquo;</span>
                     <?php endif; ?>
