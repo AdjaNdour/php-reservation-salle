@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Tests\Unit\Doubles;
 
 use App\Model\Reservation;
-use App\Pagination\Paginator;
-use App\Repository\ReservationRepositoryInterface;
+use App\Repository\Interface\IReservationRepository;
 use DateTimeImmutable;
 use DateTimeInterface;
+use Illuminate\Pagination\LengthAwarePaginator;
 
-class InMemoryReservationRepository implements ReservationRepositoryInterface
+class InMemoryReservationRepository implements IReservationRepository
 {
     private array $reservations = [];
     private int $autoIncrement = 1;
@@ -74,14 +74,14 @@ class InMemoryReservationRepository implements ReservationRepositoryInterface
         return array_values($filtered);
     }
 
-    public function paginate(int $page = 1, int $perPage = 10, array $criteria = []): Paginator
+    public function paginate(int $page = 1, int $perPage = 10, array $criteria = []): LengthAwarePaginator
     {
         $filtered = $this->findByCriteria($criteria);
         $totalItems = count($filtered);
         $offset = ($page - 1) * $perPage;
         $items = array_slice($filtered, $offset, $perPage);
 
-        return new Paginator($items, $totalItems, $page, $perPage);
+        return new LengthAwarePaginator($items, $totalItems, $perPage, $page);
     }
 
     public function countTotal(): int

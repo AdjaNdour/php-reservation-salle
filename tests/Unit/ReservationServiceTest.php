@@ -8,8 +8,9 @@ use App\DTO\CreerReservationDTOBuilder;
 use App\Model\Reservation;
 use App\Model\Salle;
 use App\Service\CreerReservationService;
-use App\Service\InterfaceReservationService;
+use App\Service\Interface\IReservationService;
 use App\Service\ReservationService;
+use App\Validation\ReservationValidator;
 use PHPUnit\Framework\TestCase;
 use Tests\Unit\Doubles\InMemoryReservationRepository;
 use Tests\Unit\Doubles\InMemorySalleRepository;
@@ -19,8 +20,7 @@ class ReservationServiceTest extends TestCase
     private InMemorySalleRepository $salleRepo;
     private InMemoryReservationRepository $reservationRepo;
     private CreerReservationService $creerService;
-    private InterfaceReservationService $reservationService;
-    private CreerReservationDTOBuilder $builder;
+    private IReservationService $reservationService;
     private Salle $salle;
 
     protected function setUp(): void
@@ -29,7 +29,6 @@ class ReservationServiceTest extends TestCase
         $this->reservationRepo = new InMemoryReservationRepository();
         $this->creerService = new CreerReservationService($this->salleRepo, $this->reservationRepo);
         $this->reservationService = new ReservationService($this->reservationRepo, $this->creerService);
-        $this->builder = new CreerReservationDTOBuilder();
 
         $this->salle = new Salle([
             'nom'      => 'Salle B12',
@@ -131,14 +130,13 @@ class ReservationServiceTest extends TestCase
     public function testSaveAvecCreerReservationDTO(): void
     {
         $demain = new \DateTimeImmutable('+2 days');
-        $dto = $this->builder
-            ->setSalleId($this->salle->id)
-            ->setResponsable('Moussa Sene')
-            ->setEmail('moussa.sene@univ.sn')
-            ->setMotif('Soutenance thèse')
-            ->setDateDebut($demain->setTime(9, 0))
-            ->setDateFin($demain->setTime(11, 0))
-            ->build();
+        CreerReservationDTOBuilder::setSalleId($this->salle->id);
+        CreerReservationDTOBuilder::setResponsable('Moussa Sene');
+        CreerReservationDTOBuilder::setEmail('moussa.sene@univ.sn');
+        CreerReservationDTOBuilder::setMotif('Soutenance thèse');
+        CreerReservationDTOBuilder::setDateDebut($demain->setTime(9, 0));
+        CreerReservationDTOBuilder::setDateFin($demain->setTime(11, 0));
+        $dto = CreerReservationDTOBuilder::build(new ReservationValidator());
 
         $reservation = $this->reservationService->save($dto);
 

@@ -6,8 +6,9 @@ namespace Tests\Unit;
 
 use App\DTO\CreerSalleDTOBuilder;
 use App\Model\Salle;
-use App\Service\InterfaceSalleService;
+use App\Service\Interface\ISalleService;
 use App\Service\SalleService;
+use App\Validation\SalleValidator;
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Tests\Unit\Doubles\InMemorySalleRepository;
@@ -15,25 +16,24 @@ use Tests\Unit\Doubles\InMemorySalleRepository;
 class SalleServiceTest extends TestCase
 {
     private InMemorySalleRepository $salleRepository;
-    private InterfaceSalleService $salleService;
-    private CreerSalleDTOBuilder $builder;
+    private ISalleService $salleService;
+    private SalleValidator $validator;
 
     protected function setUp(): void
     {
         $this->salleRepository = new InMemorySalleRepository();
         $this->salleService = new SalleService($this->salleRepository);
-        $this->builder = new CreerSalleDTOBuilder();
+        $this->validator = new SalleValidator();
     }
 
     public function testCreerSalleAvecBuilderEtDTO(): void
     {
-        $dto = $this->builder
-            ->setNom('Amphithéâtre B')
-            ->setBatiment('Bâtiment Central')
-            ->setCapacite(150)
-            ->setType('cours')
-            ->setActive(true)
-            ->build();
+        CreerSalleDTOBuilder::setNom('Amphithéâtre B');
+        CreerSalleDTOBuilder::setBatiment('Bâtiment Central');
+        CreerSalleDTOBuilder::setCapacite(150);
+        CreerSalleDTOBuilder::setType('cours');
+        CreerSalleDTOBuilder::setActive(true);
+        $dto = CreerSalleDTOBuilder::build($this->validator);
 
         $salle = $this->salleService->save($dto);
 
@@ -53,13 +53,14 @@ class SalleServiceTest extends TestCase
 
     public function testCreerSalleViaBuilderFromArray(): void
     {
-        $dto = $this->builder->fromArray([
+        CreerSalleDTOBuilder::fromArray([
             'nom'      => 'Laboratoire IA',
             'batiment' => 'Bâtiment Informatique',
             'capacite' => 30,
             'type'     => 'tp',
             'active'   => true,
-        ])->build();
+        ]);
+        $dto = CreerSalleDTOBuilder::build($this->validator);
 
         $salle = $this->salleService->save($dto);
 
@@ -69,23 +70,25 @@ class SalleServiceTest extends TestCase
 
     public function testModifierSalleAvecDTO(): void
     {
-        $dtoInitial = $this->builder
-            ->setNom('Salle 101')
-            ->setBatiment('Bâtiment A')
-            ->setCapacite(25)
-            ->setType('cours')
-            ->setActive(true)
-            ->build();
+        CreerSalleDTOBuilder::fromArray([
+            'nom'      => 'Salle 101',
+            'batiment' => 'Bâtiment A',
+            'capacite' => 25,
+            'type'     => 'cours',
+            'active'   => true,
+        ]);
+        $dtoInitial = CreerSalleDTOBuilder::build($this->validator);
 
         $salle = $this->salleService->save($dtoInitial);
 
-        $dtoModifie = $this->builder
-            ->setNom('Salle 101 Renommée')
-            ->setBatiment('Bâtiment A')
-            ->setCapacite(35)
-            ->setType('reunion')
-            ->setActive(true)
-            ->build();
+        CreerSalleDTOBuilder::fromArray([
+            'nom'      => 'Salle 101 Renommée',
+            'batiment' => 'Bâtiment A',
+            'capacite' => 35,
+            'type'     => 'reunion',
+            'active'   => true,
+        ]);
+        $dtoModifie = CreerSalleDTOBuilder::build($this->validator);
 
         $salleModifiee = $this->salleService->save($dtoModifie, $salle->id);
 
@@ -95,13 +98,14 @@ class SalleServiceTest extends TestCase
         $this->assertSame('reunion', $salleModifiee->type);
 
         // Test de la méthode update()
-        $dtoUpdate = $this->builder
-            ->setNom('Salle 101 V3')
-            ->setBatiment('Bâtiment A')
-            ->setCapacite(40)
-            ->setType('reunion')
-            ->setActive(false)
-            ->build();
+        CreerSalleDTOBuilder::fromArray([
+            'nom'      => 'Salle 101 V3',
+            'batiment' => 'Bâtiment A',
+            'capacite' => 40,
+            'type'     => 'reunion',
+            'active'   => false,
+        ]);
+        $dtoUpdate = CreerSalleDTOBuilder::build($this->validator);
 
         $salleV3 = $this->salleService->update($salle->id, $dtoUpdate);
         $this->assertNotNull($salleV3);
@@ -115,21 +119,24 @@ class SalleServiceTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage("La salle avec l'identifiant 99999 n'existe pas.");
 
-        $dto = $this->builder
-            ->setNom('Salle Inconnue')
-            ->setBatiment('Bâtiment X')
-            ->setCapacite(10)
-            ->setType('cours')
-            ->setActive(true)
-            ->build();
+        CreerSalleDTOBuilder::fromArray([
+            'nom'      => 'Salle Inconnue',
+            'batiment' => 'Bâtiment X',
+            'capacite' => 10,
+            'type'     => 'cours',
+            'active'   => true,
+        ]);
+        $dto = CreerSalleDTOBuilder::build($this->validator);
 
         $this->salleService->save($dto, 99999);
     }
 
     public function testGetAllRetourneToutesLesSalles(): void
     {
-        $dto1 = $this->builder->setNom('Salle 1')->setBatiment('Bat 1')->setCapacite(20)->setType('cours')->build();
-        $dto2 = $this->builder->setNom('Salle 2')->setBatiment('Bat 2')->setCapacite(30)->setType('cours')->build();
+        CreerSalleDTOBuilder::fromArray(['nom' => 'Salle 1', 'batiment' => 'Bat 1', 'capacite' => 20, 'type' => 'cours', 'active' => true]);
+        $dto1 = CreerSalleDTOBuilder::build($this->validator);
+        CreerSalleDTOBuilder::fromArray(['nom' => 'Salle 2', 'batiment' => 'Bat 2', 'capacite' => 30, 'type' => 'cours', 'active' => true]);
+        $dto2 = CreerSalleDTOBuilder::build($this->validator);
 
         $this->salleService->save($dto1);
         $this->salleService->save($dto2);
@@ -140,7 +147,8 @@ class SalleServiceTest extends TestCase
 
     public function testGetByIdRetourneSalleOuNull(): void
     {
-        $dto = $this->builder->setNom('Salle Unique')->setBatiment('Bat U')->setCapacite(15)->setType('cours')->build();
+        CreerSalleDTOBuilder::fromArray(['nom' => 'Salle Unique', 'batiment' => 'Bat U', 'capacite' => 15, 'type' => 'cours', 'active' => true]);
+        $dto = CreerSalleDTOBuilder::build($this->validator);
         $salle = $this->salleService->save($dto);
 
         $trouvee = $this->salleService->getById($salle->id);
@@ -153,7 +161,8 @@ class SalleServiceTest extends TestCase
 
     public function testToggleActive(): void
     {
-        $dto = $this->builder->setNom('Salle Active')->setBatiment('Bat')->setCapacite(20)->setType('cours')->setActive(true)->build();
+        CreerSalleDTOBuilder::fromArray(['nom' => 'Salle Active', 'batiment' => 'Bat', 'capacite' => 20, 'type' => 'cours', 'active' => true]);
+        $dto = CreerSalleDTOBuilder::build($this->validator);
         $salle = $this->salleService->save($dto);
 
         $this->assertTrue($salle->active);
@@ -170,7 +179,8 @@ class SalleServiceTest extends TestCase
 
     public function testDeleteSalleSupprimeSalleExistante(): void
     {
-        $dto = $this->builder->setNom('Salle A Supprimer')->setBatiment('Bat D')->setCapacite(25)->setType('cours')->build();
+        CreerSalleDTOBuilder::fromArray(['nom' => 'Salle A Supprimer', 'batiment' => 'Bat D', 'capacite' => 25, 'type' => 'cours', 'active' => true]);
+        $dto = CreerSalleDTOBuilder::build($this->validator);
         $salle = $this->salleService->save($dto);
 
         $this->assertNotNull($this->salleService->getById($salle->id));

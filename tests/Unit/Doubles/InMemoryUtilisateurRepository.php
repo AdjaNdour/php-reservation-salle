@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Tests\Unit\Doubles;
 
 use App\Model\Utilisateur;
-use App\Repository\UtilisateurRepositoryInterface;
+use App\Repository\Interface\IUtilisateurRepository;
 
-class InMemoryUtilisateurRepository implements UtilisateurRepositoryInterface
+class InMemoryUtilisateurRepository implements IUtilisateurRepository
 {
     private array $utilisateurs = [];
     private int $autoIncrement = 1;
